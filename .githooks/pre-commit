@@ -1,8 +1,8 @@
 #!/bin/sh
 
 green='\033[0;32m'
-echo -e "${green}Running pre-commit updating of requirements.txt${end}"
-echo -e "\n\n\n"
+echo "${green}Running pre-commit updating of requirements.txt${end}"
+echo "\n"
 
 # Update requirements.txt
 pip freeze > requirements.txt
