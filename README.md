@@ -20,8 +20,7 @@ which python3
 To create your virtual environment run:
 
 ```shell 
-cd api;
-virtualenv -p /path/to/python3.10.11 env 
+cd api && virtualenv -p /path/to/python3.10.11 env 
 ```
 If you want your python virtual environment to deactivate when you change directory and activate again when going back into `/api` add this code at the end of your `.bashrc` file located in your home directory:
 ```shell
