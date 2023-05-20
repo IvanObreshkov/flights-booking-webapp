@@ -5,7 +5,7 @@ echo "${green}Running pre-commit updating of requirements.txt${end}"
 echo "\n"
 
 # Update requirements.txt
-pip freeze > requirements.txt
+cd api && pip freeze > requirements.txt
 
 # Stage the updated requirements.txt file
 git add requirements.txt
