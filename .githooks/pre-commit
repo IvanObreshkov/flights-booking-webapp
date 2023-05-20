@@ -1,0 +1,15 @@
+#!/bin/sh
+
+green='\033[0;32m'
+echo -e "${green}Running pre-commit updating of requirements.txt${end}"
+echo -e "\n\n\n"
+
+# Update requirements.txt
+pip freeze > requirements.txt
+
+# Stage the updated requirements.txt file
+git add requirements.txt
+
+# Continue with the commit
+exit 0
+
