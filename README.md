@@ -1,4 +1,14 @@
 ## How to set up the project
+### Git hooks
+
+Install pre-commit hook:
+
+```shell 
+make install-hooks  # POSIX compliant shells only
+```
+Do not install the hooks if you are going to be using `Powershell`
+
+The hook auto-updates the `requirements.txt` file
 
 ### Backend
 The Python version used for this project is 3.10.11
@@ -15,7 +25,8 @@ To view the path to your python 3.10.11 run:
 ```shell 
 which python3
 ```
-⚠️This command assumes that you have set Python 3.10.11 globally with `pyenv global`. 
+⚠️This command assumes that you have set Python 3.10.11 globally with 
+`pyenv global`. 
 
 To create your virtual environment run:
 
