@@ -3,3 +3,7 @@
 ```shell
 pip3 install -r requirements.txt
 ```
+### Run the API
+```shell
+flask run
+```
