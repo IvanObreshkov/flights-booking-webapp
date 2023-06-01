@@ -7,3 +7,7 @@ pip3 install -r requirements.txt
 ```shell
 flask run
 ```
+#### If you want to have auto-reload of API when making code changes 
+```shell
+flask run --debug
+```
