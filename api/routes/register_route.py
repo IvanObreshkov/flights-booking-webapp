@@ -1,6 +1,5 @@
-import json
-from flask import request
 from flask import Blueprint
+from flask import request
 from flask_expects_json import expects_json
 
 register_bp = Blueprint("register", __name__)
@@ -8,11 +7,12 @@ register_bp = Blueprint("register", __name__)
 schema = {
     'type': 'object',
     'properties': {
-        'name': {'type': 'string'},
+        'frst_name': {'type': 'string'},
+        'last_name': {'type': 'string'},
         'email': {'type': 'string'},
         'password': {'type': 'string'}
     },
-    'required': ['email', 'password']
+    'required': ['first_name', 'last_name', 'email', 'password']
 }
 
 
@@ -29,7 +29,11 @@ def register():
     else:
         json_data = request.json
         # TODO:
-        #  - Hash password
         #  - Check if user exists in DB: if true -> return Bad Request, else -> add user to DB
         #  (later add verification email )
+        #  - Hash password
+
         return {"Message": "Ok"}
+
+def check_if_user_exists():
+    pass
