@@ -55,3 +55,11 @@ function cd() {
   fi
 }
 ```
+If you want your python virtual environment to activate automatically when you launch Pycharm into `/api` folder or when you open a new terimanl from the `/api` folder add this code at the end of your `.bashrc` file located in your home directory:
+```shell
+# Check if the current directory is "api" and contains "env" folder
+if [[ $(basename "$(pwd)") == "api" && -d "env" ]]; then
+    # Activate the virtual environment
+    source env/bin/activate
+fi
+```
