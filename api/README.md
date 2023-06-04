@@ -1,13 +1,33 @@
 # How to operate with the API
 ### Install the requirements
-```shell
+
+```bash
 pip install -r requirements.txt
 ```
 ### Run the API
-```shell
+
+```bash
 flask run
 ```
 #### If you want to have auto-reload of API when making code changes 
-```shell
+
+```bash
 flask run --debug
+```
+# Common problems
+
+### Setting up MySQL
+For Ubuntu users:
+
+```bash
+sudo apt install default-libmysqlclient-dev
+```
+Then you install “mysqlclient” Package
+
+```bash
+pip install mysqlclient
+```
+And to connect to the DB you need a connector:
+```bash
+pip install mysql-connector-python
 ```
