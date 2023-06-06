@@ -25,6 +25,26 @@ You can generate a secret key like this:
 ```python
 python -c 'import secrets; print(secrets.token_hex())'
 ```
+### Database
+
+If you want to create the database and the tables in it with predefined data run:
+```bash
+python seed.py
+```
+Making changes to some of the Tables:
+
+* Make changes to the classes located in the `models.py` file
+
+* After you have made a change do: 
+
+```bash
+flask db migrate -m "Migration message"
+```
+ * To apply the changes described by the migration script to the database do:
+
+```bash
+flask db upgrade
+```
 
 ## Run the API
 
