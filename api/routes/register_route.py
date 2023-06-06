@@ -15,7 +15,6 @@ schema = {
     'required': ['first_name', 'last_name', 'email', 'password']
 }
 
-
 @register_bp.route("/register", methods=('GET', 'POST'))
 @expects_json(schema, ignore_for=['GET'])
 def register():
