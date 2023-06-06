@@ -11,9 +11,12 @@ def create_app(config_class=DevConfig):
     app.config.from_object(config_class)
     app.register_blueprint(register_bp)
     db.init_app(app)
+
     with app.app_context():
         db.create_all()
-    migrate = Migrate(app, db)
+
+    Migrate(app, db)
+
     @app.route("/")
     def hello():
         return "Hello, World!"
