@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_migrate import Migrate
 
 from config import DevConfig
 from models.extension import db
@@ -12,6 +13,7 @@ def create_app(config_class=DevConfig):
     db.init_app(app)
     with app.app_context():
         db.create_all()
+    migrate = Migrate(app, db)
     @app.route("/")
     def hello():
         return "Hello, World!"

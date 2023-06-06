@@ -1,6 +1,10 @@
 from flask import Blueprint
 from flask import request
 from flask_expects_json import expects_json
+from sqlalchemy import text
+
+from models.extension import db
+from models.users_model import Users
 
 register_bp = Blueprint("register", __name__)
 
@@ -22,6 +26,11 @@ def register():
         response = {"Message": "Welcome!"}
         try:
             # TODO: Load register form
+            result = db.session.execute(text("Select * From users"))
+            rows = result.all()
+            for row in rows:
+                print(row)
+            db.session.close()
             return response
         except Exception as e:
             return {"Message": "Couldn't load register form", "Error": str(e)}, 500
@@ -31,7 +40,15 @@ def register():
         #  - Check if user exists in DB: if true -> return Bad Request, else -> add user to DB
         #  (later add verification email )
         #  - Hash password
-
+        user = Users(
+            first_name="Toni",
+            last_name="Montana",
+            email="misho1234@abv.bg",
+            password="pass1234"
+        )
+        db.session.add(user)
+        db.session.commit()
+        db.session.close()
         return {"Message": "Ok"}
 
 def check_if_user_exists():
