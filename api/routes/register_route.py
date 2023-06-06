@@ -4,8 +4,8 @@ from flask import request
 from flask_expects_json import expects_json
 from sqlalchemy import text
 
-from models.extension import db
-from models.users_model import Users
+from database import db
+from models import Users
 
 register_bp = Blueprint("register", __name__)
 
