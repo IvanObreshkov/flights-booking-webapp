@@ -25,7 +25,7 @@ You can generate a secret key like this:
 ```python
 python -c 'import secrets; print(secrets.token_hex())'
 ```
-### Database
+## Database
 
 If you want to create the database and the tables in it with predefined data run:
 ```bash
