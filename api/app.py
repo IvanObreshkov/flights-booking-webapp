@@ -2,8 +2,10 @@ from flask import Flask
 from flask_migrate import Migrate
 
 from config import DevConfig
-from models.extension import db
+from database import db
+
 from routes.register_route import register_bp
+
 
 
 def create_app(config_class=DevConfig):
@@ -11,7 +13,6 @@ def create_app(config_class=DevConfig):
     app.config.from_object(config_class)
     app.register_blueprint(register_bp)
     db.init_app(app)
-
     with app.app_context():
         db.create_all()
 
