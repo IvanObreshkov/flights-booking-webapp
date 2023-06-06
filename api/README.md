@@ -12,6 +12,19 @@ Check this: https://www.nixcraft.com/t/mysql-failed-error-set-password-has-no-si
 ```bash
 pip install -r requirements.txt
 ```
+### .env file
+
+```python
+SECRET_KEY="your_secret_key"
+MYSQL_DATABASE_URI="mysql+pymysql://youruser:yourpassword@127.0.0.1/flights_users"
+MYSQL_USER="youruser"
+MYSQL_PASSWORD="yourpassword"
+```
+You can generate a secret key like this:
+
+```python
+python -c 'import secrets; print(secrets.token_hex())'
+```
 
 ## Run the API
 
