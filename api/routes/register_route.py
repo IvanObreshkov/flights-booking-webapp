@@ -1,3 +1,7 @@
+# Here we use the concept of Blueprints in Flask
+# learn more about it in the docs: https://flask.palletsprojects.com/en/2.3.x/blueprints/,
+# https://flask.palletsprojects.com/en/2.3.x/tutorial/views/
+
 import sqlalchemy
 from flask import Blueprint
 from flask import request
