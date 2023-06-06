@@ -12,6 +12,7 @@ Check this: https://www.nixcraft.com/t/mysql-failed-error-set-password-has-no-si
 ```bash
 pip install -r requirements.txt
 ```
+
 ## Run the API
 
 ```bash
@@ -25,13 +26,16 @@ flask run --debug
 # Common problems
 
 ### Setting up MySQL
+
 If you get `"ModuleNotFoundError: No module named MySQLdb"` run this:
 
 ```bash
 sudo apt install default-libmysqlclient-dev
 ```
+
 If you get `"Can't connect to local MySQL server through socket '/var/lib/mysql/mysql.sock' (2)"`
 Make sure your mysql server is running 
+
 ```bash
 sudo service mysql start
 ```
