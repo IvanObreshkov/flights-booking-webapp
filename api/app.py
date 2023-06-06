@@ -6,6 +6,7 @@ from database import db
 
 from routes.register_route import register_bp
 
+migrate = Migrate()
 
 
 def create_app(config_class=DevConfig):
@@ -16,7 +17,7 @@ def create_app(config_class=DevConfig):
     with app.app_context():
         db.create_all()
 
-    Migrate(app, db)
+    migrate.init_app(app, db)
 
     @app.route("/")
     def hello():
