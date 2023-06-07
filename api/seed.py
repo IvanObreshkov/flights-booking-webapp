@@ -7,7 +7,8 @@ from sqlalchemy.orm import sessionmaker
 
 from sqlalchemy_utils import database_exists, create_database
 
-from models import Flights, Users
+from models.flights_model import Flights
+from models.users_model import Users
 
 load_dotenv()
 
@@ -28,16 +29,21 @@ Users.metadata.create_all(engine)
 
 # Seed data for Flights
 flights_data = [
-    {"start_destination": "London", "end_destination": "Sofia"},
-    {"start_destination": "Varna", "end_destination": "Plovidv"},
-    {"start_destination": "Frankfurt", "end_destination": "New York"},
+    {"start_destination": "London", "end_destination": "Sofia", "takeoff_time": 1352177617,
+     "landing_time": 1007873885},
+    {"start_destination": "Varna", "end_destination": "Plovidv", "takeoff_time": 1868917941,
+     "landing_time": 1322466274},
+    {"start_destination": "Frankfurt", "end_destination": "New York", "takeoff_time": 1408940875,
+     "landing_time": 1755671246},
 ]
 
 for flight in flights_data:
     new_flight = Flights(
         flight_number=str(uuid.uuid4().hex)[:6].upper(),
         start_destination=flight["start_destination"],
-        end_destination=flight["end_destination"]
+        end_destination=flight["end_destination"],
+        takeoff_time=flight["takeoff_time"],
+        landing_time=flight["landing_time"]
     )
     session.add(new_flight)
 
@@ -69,3 +75,5 @@ for user in users_data:
 
 # Commit the changes
 session.commit()
+
+print("Data seeded...")
