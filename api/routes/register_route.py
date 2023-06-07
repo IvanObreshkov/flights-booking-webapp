@@ -1,6 +1,7 @@
 # Here we use the concept of Blueprints in Flask
 # learn more about it in the docs: https://flask.palletsprojects.com/en/2.3.x/blueprints/,
 # https://flask.palletsprojects.com/en/2.3.x/tutorial/views/
+import re
 
 import sqlalchemy
 from flask import Blueprint
@@ -9,7 +10,7 @@ from flask_expects_json import expects_json
 from sqlalchemy import text
 
 from database import db
-from models import Users
+from models.users_model import Users
 
 register_bp = Blueprint("register", __name__)
 
@@ -52,7 +53,12 @@ def register():
         return {"Message": "New user added to DB!"}
 
     except sqlalchemy.exc.IntegrityError as e:
-        return {"Error": f"Email address {email} exist in the DB!"}, 409
+        pattern = r"\"(.*?)\""
+        matches = re.findall(pattern, str(e))
+        if len(matches) >= 1:
+            return {"Error": f"{matches[0]}"}, 409
+        else:
+            return {"Error": f"{str(e)}"}, 500
 
 
 @register_bp.route("/users", methods=['GET'])
