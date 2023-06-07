@@ -11,3 +11,11 @@ class Users(db.Model):
     last_name = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
     email = sqlalchemy.Column(sqlalchemy.String(255), nullable=False, unique=True)
     password = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'email': self.email
+        }
