@@ -22,6 +22,7 @@ schema = {
         'email': {'type': 'string', 'format': 'email'},
         'password': {'type': 'string'}
     },
+    'required': ['first_name', 'last_name', 'email', 'password'],
     'additionalProperties': False
 }
 
