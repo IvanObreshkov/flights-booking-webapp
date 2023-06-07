@@ -17,17 +17,17 @@ register_bp = Blueprint("register", __name__)
 schema = {
     'type': 'object',
     'properties': {
-        'frst_name': {'type': 'string'},
+        'first_name': {'type': 'string'},
         'last_name': {'type': 'string'},
-        'email': {'type': 'string'},
+        'email': {'type': 'string', 'format': 'email'},
         'password': {'type': 'string'}
     },
-    'required': ['first_name', 'last_name', 'email', 'password']
+    'additionalProperties': False
 }
 
 
 @register_bp.route("/register", methods=['POST'])
-@expects_json(schema)
+@expects_json(schema, check_formats=True)
 def register_user():
     json_data = request.json
     first_name = json_data["first_name"]
@@ -48,6 +48,8 @@ def register_user():
             password=password
         )
         db.session.add(new_user)
+        db.session.commit()
+
         return {"Message": "New user added to DB!"}
 
     except sqlalchemy.exc.IntegrityError as e:
@@ -59,5 +61,4 @@ def register_user():
         else:
             return {"Error": f"{str(e)}"}, 500
     finally:
-        db.session.commit()
         db.session.close()
