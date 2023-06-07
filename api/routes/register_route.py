@@ -28,7 +28,7 @@ schema = {
 
 @register_bp.route("/register", methods=['POST'])
 @expects_json(schema)
-def register():
+def register_user():
     json_data = request.json
     first_name = json_data["first_name"]
     last_name = json_data["last_name"]
@@ -48,7 +48,6 @@ def register():
             password=password
         )
         db.session.add(new_user)
-        db.session.commit()
         return {"Message": "New user added to DB!"}
 
     except sqlalchemy.exc.IntegrityError as e:
@@ -60,4 +59,5 @@ def register():
         else:
             return {"Error": f"{str(e)}"}, 500
     finally:
+        db.session.commit()
         db.session.close()
