@@ -5,7 +5,6 @@
 from flask import Blueprint, request
 from flask_expects_json import expects_json
 
-import models.users_model
 from database import db
 from models.users_model import Users
 
@@ -46,7 +45,7 @@ def get_user(user_uuid):
     try:
         user = db.session.query(Users).get(user_uuid)
         if user:
-            return user.to_json(), 200
+            return {"User": user.to_json()}, 200
 
         return {"Message": f"User with uuid {user_uuid} doesn't exist in the DB!"}, 404
 
