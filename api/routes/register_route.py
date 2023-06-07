@@ -1,13 +1,13 @@
 # Here we use the concept of Blueprints in Flask
 # learn more about it in the docs: https://flask.palletsprojects.com/en/2.3.x/blueprints/,
 # https://flask.palletsprojects.com/en/2.3.x/tutorial/views/
+
 import re
 
 import sqlalchemy
 from flask import Blueprint
 from flask import request
 from flask_expects_json import expects_json
-from sqlalchemy import text
 
 from database import db
 from models.users_model import Users
@@ -49,43 +49,15 @@ def register():
         )
         db.session.add(new_user)
         db.session.commit()
-        db.session.close()
         return {"Message": "New user added to DB!"}
 
     except sqlalchemy.exc.IntegrityError as e:
+        db.session.rollback()
         pattern = r"\"(.*?)\""
         matches = re.findall(pattern, str(e))
-        if len(matches) >= 1:
+        if matches:
             return {"Error": f"{matches[0]}"}, 409
         else:
             return {"Error": f"{str(e)}"}, 500
-
-
-@register_bp.route("/users", methods=['GET'])
-def get_users():
-    try:
-        result = db.session.execute(text("Select * From users"))
-        rows = result.all()
-
-        # JSON serializing of Row objects
-        users = serialize_rows(result, rows)
-        response = {"Users": users}
-
+    finally:
         db.session.close()
-        return response
-
-    except Exception as e:
-        return {"Message": "Couldn't load register form", "Error": str(e)}, 500
-
-
-def serialize_rows(result, rows):
-    """Serializes Row objects to JSON so that they could be returned as a response from the API"""
-
-    column_names = result.keys()
-    users = []
-    for row in rows:
-        user = {}
-        for column, value in zip(column_names, row):
-            user[column] = value
-        users.append(user)
-    return users
