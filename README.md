@@ -14,8 +14,13 @@ The hook auto-updates the `requirements.txt` file
 The Python version used for this project is 3.10.11
 #### How to install Python 3.10.11
 To make your life easier it is recommended to use `pyenv`. Here is an excellent [guide](https://brain2life.hashnode.dev/how-to-install-pyenv-python-version-manager-on-ubuntu-2004) on how to install it.
+Run:
+```bash
+pyenv install 3.10.11
+```
+
 #### Creating a Python 3.10.11 Virtual environment
-We recommend using `virtualenv` for creating the virtual environment, but you can use whatever tool you like.
+We recommend using `virtualenv` for creating the virtual environment if you are using PyCharm and WSL, but you can use whatever tool you like.
 To install `virtualenv` use:
 
 ```shell 
@@ -26,7 +31,7 @@ To view the path to your python 3.10.11 run:
 which python3
 ```
 ⚠️This command assumes that you have set Python 3.10.11 globally with 
-`pyenv global`. 
+`pyenv global 3.10.11`. 
 
 To create your virtual environment run:
 
