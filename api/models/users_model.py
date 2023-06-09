@@ -10,7 +10,7 @@ class Users(db.Model):
     first_name = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
     last_name = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
     email = sqlalchemy.Column(sqlalchemy.String(255), nullable=False, unique=True)
-    password = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
+    password = sqlalchemy.Column(sqlalchemy.LargeBinary(60), nullable=False)
 
     def to_json(self):
         return {
