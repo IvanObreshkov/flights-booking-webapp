@@ -24,7 +24,7 @@ We recommend using `virtualenv` for creating the virtual environment if you are 
 To install `virtualenv` use:
 
 ```shell 
-sudo pip3 install virtualenv
+pip3 install virtualenv
 ```
 To view the path to your python 3.10.11 run:
 ```shell 
