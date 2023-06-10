@@ -7,12 +7,14 @@ import re
 import sqlalchemy
 from flask import Blueprint
 from flask import request
+from flask_bcrypt import Bcrypt
 from flask_expects_json import expects_json
 
 from database import db
 from models.users_model import Users
 
 register_bp = Blueprint("register", __name__)
+bcrypt = Bcrypt()
 
 schema = {
     'type': 'object',
@@ -30,23 +32,23 @@ schema = {
 @register_bp.route("/register", methods=['POST'])
 @expects_json(schema, check_formats=True)
 def register_user():
-    json_data = request.json
-    first_name = json_data["first_name"]
-    last_name = json_data["last_name"]
-    email = json_data["email"]
-    password = json_data["password"]
-
-    # TODO:
-    #  - Hash password
-    #  - Implement JWT
-    #  - Send verification emails
-
     try:
+        json_data = request.json
+        first_name = json_data["first_name"]
+        last_name = json_data["last_name"]
+        email = json_data["email"]
+        password = json_data["password"]
+        hashed_password = bcrypt.generate_password_hash(password,10)
+
+        # TODO:
+        #  - Implement JWT
+        #  - Send verification emails
+
         new_user = Users(
             first_name=first_name,
             last_name=last_name,
             email=email,
-            password=password
+            password=hashed_password
         )
         db.session.add(new_user)
         db.session.commit()
