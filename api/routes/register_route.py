@@ -38,7 +38,7 @@ def register_user():
         last_name = json_data["last_name"]
         email = json_data["email"]
         password = json_data["password"]
-        hashed_password = bcrypt.generate_password_hash(password,10)
+        hashed_password = bcrypt.generate_password_hash(password,10).decode("utf-8")
 
         # TODO:
         #  - Implement JWT
