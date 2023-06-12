@@ -2,7 +2,8 @@ import uuid
 import sqlalchemy
 from sqlalchemy.orm import relationship
 from database import db
-from user_booking import UserBookings
+
+
 class Users(db.Model):
     __tablename__ = 'users'
 
@@ -12,7 +13,7 @@ class Users(db.Model):
     email = sqlalchemy.Column(sqlalchemy.String(255), nullable=False, unique=True)
     password = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
 
-    user_bookings = relationship(UserBookings, back_populates='users')
+    user_bookings = relationship("UserBookings", backref='users')
 
     def to_json(self):
         return {

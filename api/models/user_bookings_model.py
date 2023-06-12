@@ -1,10 +1,10 @@
 import uuid
+
 import sqlalchemy
 from sqlalchemy import ForeignKey, String, Column
 from sqlalchemy.orm import relationship
+
 from database import db
-from users_model import Users
-from flights_model import Flights
 
 
 class UserBookings(db.Model):
@@ -12,11 +12,11 @@ class UserBookings(db.Model):
 
 
     booking_id = sqlalchemy.Column(sqlalchemy.String(10), primary_key=True, default=str(uuid.uuid4), unique=True)
-    flight_number = Column(String, ForeignKey('flights.flight_number'), primary_key=True)
-    user_id = Column(String, ForeignKey('users.user_id'), primary_key=True)
+    flight_number = Column(String, ForeignKey('flights.flight_number'))
+    user_id = Column(String, ForeignKey('users.user_id'))
 
-    user = relationship(Users, back_populates='flights')
-    flight = relationship(Flights, back_populates='users')
+    user = relationship("Users", backref='flights')
+    flight = relationship("Flights", backref='users')
 
     # FIXME
     def to_json(self):

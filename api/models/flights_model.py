@@ -4,7 +4,6 @@ import sqlalchemy
 from sqlalchemy.orm import relationship
 
 from database import db
-from user_booking import UserBookings
 
 
 class Flights(db.Model):
@@ -17,7 +16,7 @@ class Flights(db.Model):
     takeoff_time = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
     landing_time = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
 
-    users_bookings = relationship(UserBookings, back_populates='flights')
+    users_bookings = relationship("UserBookings", backref='flights')
 
     def to_json(self):
         return {
