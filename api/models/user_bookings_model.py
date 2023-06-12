@@ -12,7 +12,7 @@ class UserBookings(db.Model):
 
     booking_id = sqlalchemy.Column(sqlalchemy.String(10), primary_key=True, default=str(uuid.uuid4), unique=True)
     flight_number = sqlalchemy.Column(ForeignKey('flights.flight_number'), primary_key=True)
-    user_id = sqlalchemy.Column(ForeignKey('users.user_id'), primary_key=True)
+    user_id = sqlalchemy.Column(ForeignKey('users.id'), primary_key=True)
 
     users = relationship("Users", back_populates="user_bookings")
     flights = relationship("Flights", back_populates="user_bookings")
