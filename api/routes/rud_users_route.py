@@ -26,16 +26,15 @@ schema = {
 def get_users():
     # TODO: Add BEARER TOKEN
 
-    if request.method == "GET":
-        try:
-            all_users = db.session.query(Users).all()
-            users_list = [user.to_json() for user in all_users]
+    try:
+        all_users = db.session.query(Users).all()
+        users_list = [user.to_json() for user in all_users]
 
-            return {"Users": users_list}, 200
-        except Exception as e:
-            return {"Message": "Couldn't retrieve users from DB!", "Error": str(e)}, 500
-        finally:
-            db.session.close()
+        return {"Users": users_list}, 200
+    except Exception as e:
+        return {"Message": "Couldn't retrieve users from DB!", "Error": str(e)}, 500
+    finally:
+        db.session.close()
 
 
 @rud_users_bp.get("/users/<uuid:user_uuid>")
@@ -78,7 +77,7 @@ def delete_user(user_uuid):
 
 
 @rud_users_bp.put("/users/<uuid:user_uuid>")
-@expects_json(schema,check_formats=True)
+@expects_json(schema, check_formats=True)
 def update_user(user_uuid):
     # TODO: Add BEARER TOKEN
 
