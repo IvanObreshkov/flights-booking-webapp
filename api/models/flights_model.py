@@ -7,7 +7,7 @@ from database import db
 
 
 class Flights(db.Model):
-    __tablename__ = 'flights'
+    __tablename__ = "flights"
 
     flight_number = sqlalchemy.Column(sqlalchemy.String(6), primary_key=True, default=str(uuid.uuid4().hex)[:6].upper(),
                                       nullable=False, unique=True)
@@ -16,7 +16,7 @@ class Flights(db.Model):
     takeoff_time = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
     landing_time = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
 
-    users_bookings = relationship("UserBookings", backref='flights')
+    user_bookings = relationship("UserBookings", back_populates="flights")
 
     def to_json(self):
         return {

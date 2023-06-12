@@ -5,7 +5,7 @@ from config import DevConfig
 from database import db
 from routes.crud_flights_route import crud_flights_bp
 from routes.rud_users_route import rud_users_bp
-
+from models.user_bookings_model import UserBookings
 from routes.register_route import register_bp
 
 migrate = Migrate()

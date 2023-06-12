@@ -2,21 +2,20 @@ import uuid
 
 import sqlalchemy
 from sqlalchemy import ForeignKey, String, Column
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import backref, Mapped, mapped_column, relationship
 
 from database import db
 
 
 class UserBookings(db.Model):
-    __tablename__ = 'user_bookings'
-
+    __tablename__ = "user_bookings"
 
     booking_id = sqlalchemy.Column(sqlalchemy.String(10), primary_key=True, default=str(uuid.uuid4), unique=True)
-    flight_number = Column(String, ForeignKey('flights.flight_number'))
-    user_id = Column(String, ForeignKey('users.user_id'))
+    flight_number = sqlalchemy.Column(ForeignKey('flights.flight_number'), primary_key=True)
+    user_id = sqlalchemy.Column(ForeignKey('users.user_id'), primary_key=True)
 
-    user = relationship("Users", backref='flights')
-    flight = relationship("Flights", backref='users')
+    users = relationship("Users", back_populates="user_bookings")
+    flights = relationship("Flights", back_populates="user_bookings")
 
     # FIXME
     def to_json(self):
@@ -31,4 +30,3 @@ class UserBookings(db.Model):
             'takeoff_time': self.takeoff_time,
             'landing_time': self.landing_time
         }
-
