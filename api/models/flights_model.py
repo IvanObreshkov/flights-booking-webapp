@@ -13,8 +13,9 @@ class Flights(db.Model):
                                       nullable=False, unique=True)
     start_destination = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
     end_destination = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
-    takeoff_time = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
-    landing_time = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
+    takeoff_time = sqlalchemy.Column(sqlalchemy.String(16), nullable=False)
+    landing_time = sqlalchemy.Column(sqlalchemy.String(16), nullable=False)
+    price = sqlalchemy.Column(sqlalchemy.Double, nullable=False)
 
     user_bookings = relationship("UserBookings", back_populates="flights")
 
@@ -24,5 +25,6 @@ class Flights(db.Model):
             'start_destination': self.start_destination,
             'end_destination': self.end_destination,
             'takeoff_time': self.takeoff_time,
-            'landing_time': self.landing_time
+            'landing_time': self.landing_time,
+            'price': self.price
         }
