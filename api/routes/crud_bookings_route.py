@@ -20,6 +20,7 @@ def get_bookings():
     finally:
         db.session.close()
 
+
 @crud_bookings_bp.get("/bookings/<uuid:booking_id>")
 def get_booking(booking_id):
     # TODO: Add Bearer Token
@@ -37,6 +38,7 @@ def get_booking(booking_id):
     finally:
         db.session.close()
 
+
 @crud_bookings_bp.get("/bookings/<uuid:user_id>")
 def get_user_bookings(user_id):
     # TODO: Add Bearer Token
@@ -44,7 +46,7 @@ def get_user_bookings(user_id):
     try:
         user = db.session.query(Users).get(user_id)
         if user:
-            user_bookings = db.session.query(UserBookings).filter_by(UserBookings.user_id==user_id).all()
+            user_bookings = db.session.query(UserBookings).filter_by(UserBookings.user_id == user_id).all()
 
             # TODO: Show all info for flights
             bookings = [booking.to_json for booking in user_bookings]
@@ -57,6 +59,7 @@ def get_user_bookings(user_id):
 
     finally:
         db.session.close()
+
 
 @crud_bookings_bp.delete("/users/<uuid:booking_id>")
 def delete_user(booking_id):
