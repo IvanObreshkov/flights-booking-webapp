@@ -49,7 +49,7 @@ def get_user(user_uuid):
         return {"Message": f"User with uuid {user_uuid} doesn't exist in the DB!"}, 404
 
     except Exception as e:
-        return {"Message": "Couldn't retrieve user from DB!", "Error": str(e)}, 500
+        return {"Message": f"Couldn't retrieve user with uuid {user_uuid} from DB!", "Error": str(e)}, 500
 
     finally:
         db.session.close()
@@ -70,7 +70,7 @@ def delete_user(user_uuid):
 
     except Exception as e:
         db.session.rollback()
-        return {"Message": "Couldn't retrieve user from DB!", "Error": str(e)}, 500
+        return {"Message": f"Couldn't delete user with uuid {user_uuid} from DB!", "Error": str(e)}, 500
 
     finally:
         db.session.close()
@@ -96,7 +96,7 @@ def update_user(user_uuid):
 
     except Exception as e:
         db.session.rollback()
-        return {"Message": "Couldn't retrieve user from DB!", "Error": str(e)}, 500
+        return {"Message": f"Couldn't update user with uuid {user_uuid}", "Error": str(e)}, 500
 
     finally:
         db.session.close()

@@ -20,13 +20,7 @@ class UserBookings(db.Model):
     # FIXME
     def to_json(self):
         return {
-            'id': self.id,
-            'first_name': self.first_name,
-            'last_name': self.last_name,
-            'email': self.email,
+            'id': self.booking_id,
             'flight_number': self.flight_number,
-            'start_destination': self.start_destination,
-            'end_destination': self.end_destination,
-            'takeoff_time': self.takeoff_time,
-            'landing_time': self.landing_time
+            'user_id': self.user_id
         }
