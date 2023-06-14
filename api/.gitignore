@@ -19,7 +19,7 @@ docs/_build/
 .vscode
 instance/
 .webassets-cache
-
+.python-version
 # Coverage reports
 htmlcov/
 .coverage
