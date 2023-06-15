@@ -4,7 +4,8 @@
 
 import re
 
-from werkzeug.exceptions import BadRequest
+from sqlalchemy.exc import IntegrityError
+from werkzeug.exceptions import InternalServerError
 
 import sqlalchemy
 from flask import Blueprint
@@ -16,7 +17,7 @@ from database import db
 from models.users_model import Users
 
 register_bp = Blueprint("register", __name__)
-
+bcrypt = Bcrypt()
 
 schema = {
     'type': 'object',
@@ -40,7 +41,7 @@ def register_user():
         last_name = json_data["last_name"]
         email = json_data["email"]
         password = json_data["password"]
-        hashed_password = Bcrypt.generate_password_hash(password,10).decode("utf-8")
+        hashed_password = bcrypt.generate_password_hash(password,10).decode("utf-8")
 
         # TODO:
         #  - Implement JWT
@@ -57,19 +58,14 @@ def register_user():
 
         return {"Message": "New user added to DB!"}
 
-    except Exception as e:
+    except IntegrityError as e:
         db.session.rollback()
         pattern = r"\"(.*?)\""
         matches = re.findall(pattern, str(e))
         if matches:
             return {"Error": f"{matches[0]}"}, 409
-        else:
-            return {"Error": f"{str(e)}"}, 500
-    except KeyError as e:
-        # Handle missing or invalid JSON properties
-        raise BadRequest(f'Missing or invalid property: {e}')
     except Exception as e:
         # Handle any other exceptions and errors
-        raise BadRequest('Registration failed! Please try again later!')
+        raise InternalServerError(f'Registration failed! Please try again later!, Error: {str(e)}')
     finally:
         db.session.close()
