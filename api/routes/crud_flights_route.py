@@ -1,5 +1,6 @@
 import re
 import sqlalchemy
+from werkzeug.exceptions import InternalServerError
 from sqlalchemy.exc import IntegrityError
 from flask import Blueprint, request
 from flask_expects_json import expects_json
@@ -82,16 +83,25 @@ def add_flight():
 
         return {"Message": "New flight added to DB!"}
 
-    except IntegrityError:
+    # except IntegrityError as e:
         # Handle integrity constraint violation (e.g., duplicate entry)
-        return {"Message": "Flight already exists in the database."}, 409
-    except Exception as e:
+        # return {"Message": "Flight already exists in the database."}, 409
+    # except Exception as e:
         # Handle any other exceptions or errors
-        return {"Message": "Failed to add flight.", "Error": str(e)}, 500
+        # return {"Message": "Failed to add flight.", "Error": str(e)}, 500
+    except IntegrityError as e:
+        db.session.rollback()
+        pattern = r"\"(.*?)\""
+        matches = re.findall(pattern, str(e))
+        if matches:
+            return {"Error": f"{matches[0]}"}, 409
+    except Exception as e:
+        # Handle any other exceptions and errors
+        raise InternalServerError(f'Registration failed! Please try again later!, Error: {str(e)}')
     finally:
         db.session.close()
 
-@crud_flights_bp.delete("/flights/<uuid:flight_number_uuid>")
+@crud_flights_bp.delete("/flights/<string:flight_number_uuid>")
 def delete_user(flight_number_uuid):
     # TODO: Add BEARER TOKEN
 
@@ -100,19 +110,19 @@ def delete_user(flight_number_uuid):
         if user:
             db.session.delete(user)
             db.session.commit()
-            return {"Message": f"Flight with uuid {flight_number_uuid} was removed successfully from the DB"}, 200
+            return {"Message": f"Flight with number: {flight_number_uuid} was removed successfully from the DB"}, 200
 
-        return {"Message": f"Flight with uuid {flight_number_uuid} doesn't exist in the DB!"}, 404
+        return {"Message": f"Flight with number: {flight_number_uuid} doesn't exist in the DB!"}, 404
 
     except Exception as e:
         db.session.rollback()
-        return {"Message": f"Couldn't delete flight with uuid {flight_number_uuid} from DB!", "Error": str(e)}, 500
+        return {"Message": f"Couldn't delete flight with number: {flight_number_uuid} from DB!", "Error": str(e)}, 500
 
     finally:
         db.session.close()
 
 
-@crud_flights_bp.put("/flights/<uuid:flight_number_uuid>")
+@crud_flights_bp.put("/flights/<string:flight_number_uuid>")
 @expects_json(update_flight_schema, check_formats=True)
 def update_flight(flight_number_uuid):
     # TODO: Add BEARER TOKEN
@@ -121,19 +131,19 @@ def update_flight(flight_number_uuid):
         flight = db.session.query(Flights).get(flight_number_uuid)
         if flight:
             json_data = request.json
-            flight.staring_destination = json_data.get('starting_destination', flight.starting_destination)
+            flight.start_destination = json_data.get('start_destination', flight.start_destination)
             flight.end_destination = json_data.get('end_destination', flight.end_destination)
             flight.takeoff_time = json_data.get('takeoff_time', flight.takeoff_time)
             flight.landing_time = json_data.get('landing_time', flight.landing_time)
             flight.price = json_data.get('price', flight.price)
             db.session.commit()
-            return {"Message": f"Flight with uuid {flight_number_uuid} was updated successfully."}, 200
+            return {"Message": f"Flight with number: {flight_number_uuid} was updated successfully."}, 200
 
-        return {"Message": f"Flight with uuid {flight_number_uuid} doesn't exist in the DB!"}, 404
+        return {"Message": f"Flight with number: {flight_number_uuid} doesn't exist in the DB!"}, 404
 
     except Exception as e:
         db.session.rollback()
-        return {"Message": f"Couldn't update flight with uuid {flight_number_uuid}", "Error": str(e)}, 500
+        return {"Message": f"Couldn't update flight with number: {flight_number_uuid}", "Error": str(e)}, 500
 
     finally:
         db.session.close()
