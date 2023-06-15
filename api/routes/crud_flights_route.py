@@ -27,6 +27,25 @@ flights_schema = {
 'additionalProperties': False
 }
 
+update_flight_schema = {
+    'type': 'object',
+    'properties': {
+        'start_destination': {'type': 'string'},
+        'end_destination': {'type': 'string'},
+        'takeoff_time': {'type': 'string',
+                         'pattern': '^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}$',
+                         'examples': ["2023-06-12 15:30"]
+                         },
+        'landing_time': {'type': 'string',
+                         'pattern': '^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}$',
+                         'examples': ["2023-06-12 17:15"]
+                         },
+        'price': {'type': 'number'}
+    },
+'additionalProperties': False
+}
+
+
 @crud_flights_bp.get("/flights")
 def get_flights():
     try:
@@ -69,5 +88,52 @@ def add_flight():
     except Exception as e:
         # Handle any other exceptions or errors
         return {"Message": "Failed to add flight.", "Error": str(e)}, 500
+    finally:
+        db.session.close()
+
+@crud_flights_bp.delete("/flights/<uuid:flight_number_uuid>")
+def delete_user(flight_number_uuid):
+    # TODO: Add BEARER TOKEN
+
+    try:
+        user = db.session.query(Flights).get(flight_number_uuid)
+        if user:
+            db.session.delete(user)
+            db.session.commit()
+            return {"Message": f"Flight with uuid {flight_number_uuid} was removed successfully from the DB"}, 200
+
+        return {"Message": f"Flight with uuid {flight_number_uuid} doesn't exist in the DB!"}, 404
+
+    except Exception as e:
+        db.session.rollback()
+        return {"Message": f"Couldn't delete flight with uuid {flight_number_uuid} from DB!", "Error": str(e)}, 500
+
+    finally:
+        db.session.close()
+
+
+@crud_flights_bp.put("/flights/<uuid:flight_number_uuid>")
+@expects_json(update_flight_schema, check_formats=True)
+def update_flight(flight_number_uuid):
+    # TODO: Add BEARER TOKEN
+
+    try:
+        flight = db.session.query(Flights).get(flight_number_uuid)
+        if flight:
+            json_data = request.json
+            flight.staring_destination = json_data.get('starting_destination', flight.starting_destination)
+            flight.end_destination = json_data.get('end_destination', flight.end_destination)
+            flight.takeoff_time = json_data.get('takeoff_time', flight.takeoff_time)
+            flight.landing_time = json_data.get('landing_time', flight.landing_time)
+            flight.price = json_data.get('price', flight.price)
+            db.session.commit()
+            return {"Message": f"Flight with uuid {flight_number_uuid} was updated successfully."}, 200
+
+        return {"Message": f"Flight with uuid {flight_number_uuid} doesn't exist in the DB!"}, 404
+
+    except Exception as e:
+        db.session.rollback()
+        return {"Message": f"Couldn't update flight with uuid {flight_number_uuid}", "Error": str(e)}, 500
+
     finally:
         db.session.close()
