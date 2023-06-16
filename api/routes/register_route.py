@@ -4,6 +4,9 @@
 
 import re
 
+from sqlalchemy.exc import IntegrityError
+from werkzeug.exceptions import InternalServerError
+
 import sqlalchemy
 from flask import Blueprint
 from flask import request
@@ -55,13 +58,14 @@ def register_user():
 
         return {"Message": "New user added to DB!"}
 
-    except sqlalchemy.exc.IntegrityError as e:
+    except IntegrityError as e:
         db.session.rollback()
         pattern = r"\"(.*?)\""
         matches = re.findall(pattern, str(e))
         if matches:
             return {"Error": f"{matches[0]}"}, 409
-        else:
-            return {"Error": f"{str(e)}"}, 500
+    except Exception as e:
+        # Handle any other exceptions and errors
+        raise InternalServerError(f'Registration failed! Please try again later!, Error: {str(e)}')
     finally:
         db.session.close()
