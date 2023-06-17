@@ -26,6 +26,8 @@ To create your virtual environment run:
 ```shell 
 cd api && pyenv virtualenv 3.10.11 fllights-env
 ```
+Make sure you are in the `/api` folder and run: 
+
 ```shell
 pyenv local flights-env
 ```
