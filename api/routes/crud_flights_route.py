@@ -60,7 +60,7 @@ def get_flights():
     finally:
         db.session.close()
 
-@crud_flights_bp.post("/flight")
+@crud_flights_bp.post("/flights")
 @expects_json(flights_schema, check_formats=True)
 def add_flight():
     try:
