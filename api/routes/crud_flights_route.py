@@ -1,9 +1,10 @@
 import re
-import sqlalchemy
-from werkzeug.exceptions import InternalServerError
-from sqlalchemy.exc import IntegrityError
+
 from flask import Blueprint, request
 from flask_expects_json import expects_json
+from sqlalchemy.exc import IntegrityError
+from werkzeug.exceptions import InternalServerError
+
 from database import db
 from models.flights_model import Flights
 
@@ -59,7 +60,7 @@ def get_flights():
     finally:
         db.session.close()
 
-@crud_flights_bp.route("/flight", methods=['POST'])
+@crud_flights_bp.post("/flight")
 @expects_json(flights_schema, check_formats=True)
 def add_flight():
     try:
@@ -83,12 +84,6 @@ def add_flight():
 
         return {"Message": "New flight added to DB!"}
 
-    # except IntegrityError as e:
-        # Handle integrity constraint violation (e.g., duplicate entry)
-        # return {"Message": "Flight already exists in the database."}, 409
-    # except Exception as e:
-        # Handle any other exceptions or errors
-        # return {"Message": "Failed to add flight.", "Error": str(e)}, 500
     except IntegrityError as e:
         db.session.rollback()
         pattern = r"\"(.*?)\""
