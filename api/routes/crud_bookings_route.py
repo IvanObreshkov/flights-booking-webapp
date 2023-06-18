@@ -86,7 +86,7 @@ def get_user_bookings(user_id_email):
             # When querying individual rows the row is a KeyedTuple which has an _asdict method
             bookings = [booking._asdict() for booking in all_user_bookings]
 
-            return jsonify({"User's Bookings": bookings}), 200
+            return {"User's Bookings": bookings}, 200
 
         return {"Message": f"User with uuid {user_id} doesn't exist in the DB!"}, 404
 
