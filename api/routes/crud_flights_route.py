@@ -59,7 +59,22 @@ def get_flights():
         return {"Message": "Couldn't retrieve flights from DB!", "Error": str(e)}, 500
     finally:
         db.session.close()
+@crud_flights_bp.get("/flights/<flight_number>")
+def get_user(flight_number):
+    # TODO: Add BEARER TOKEN
 
+    try:
+        flight = db.session.query(Flights).get(flight_number)
+        if flight:
+            return {"Flight": flight.to_json()}, 200
+
+        return {"Message": f"Flight with uuid {flight_number} doesn't exist in the DB!"}, 404
+
+    except Exception as e:
+        return {"Message": f"Couldn't retrieve flight with number {flight_number} from DB!", "Error": str(e)}, 500
+
+    finally:
+        db.session.close()
 @crud_flights_bp.post("/flights")
 @expects_json(flights_schema, check_formats=True)
 def add_flight():
