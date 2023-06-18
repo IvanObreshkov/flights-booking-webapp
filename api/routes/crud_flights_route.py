@@ -7,6 +7,8 @@ from werkzeug.exceptions import InternalServerError
 
 from database import db
 from models.flights_model import Flights
+from models.user_bookings_model import UserBookings
+from models.users_model import Users
 
 crud_flights_bp = Blueprint("flights", __name__)
 
@@ -60,7 +62,7 @@ def get_flights():
     finally:
         db.session.close()
 @crud_flights_bp.get("/flights/<flight_number>")
-def get_user(flight_number):
+def get_flight(flight_number):
     # TODO: Add BEARER TOKEN
 
     try:
@@ -75,6 +77,37 @@ def get_user(flight_number):
 
     finally:
         db.session.close()
+
+@crud_flights_bp.get("/flights/<string:flight_number>/passengers")
+def get_flight_passengers(flight_number):
+    # TODO: Add Bearer Token
+
+    try:
+        flight = db.session.query(Flights).get(flight_number)
+        if flight:
+            all_passengers = db.session.query(UserBookings). \
+                join(UserBookings.users). \
+                join(UserBookings.flights). \
+                with_entities(UserBookings.booking_id,
+                              Users.id,
+                              Users.email,
+                              Users.first_name,
+                              Users.last_name). \
+                filter_by(flight_number=flight_number).all()
+
+            # When querying individual rows the row is a KeyedTuple which has an _asdict method
+            passengers = [passenger._asdict() for passenger in all_passengers]
+
+            return {f"Passengers for flight {flight_number}": passengers}, 200
+
+        return {"Message": f"Flight with uuid {flight_number} doesn't exist in the DB!"}, 404
+
+    except Exception as e:
+        return {"Message": f"Couldn't passengers for flight {flight_number} from DB!", "Error": str(e)}, 500
+
+    finally:
+        db.session.close()
+
 @crud_flights_bp.post("/flights")
 @expects_json(flights_schema, check_formats=True)
 def add_flight():
