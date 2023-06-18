@@ -1,6 +1,6 @@
 import re
 
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from flask_expects_json import expects_json
 from sqlalchemy.exc import IntegrityError
 
@@ -21,6 +21,7 @@ bookings_schema = {
     'additionalProperties': False
 }
 
+
 @crud_bookings_bp.get("/bookings")
 def get_bookings():
     # TODO: Add Bearer Token
@@ -29,7 +30,7 @@ def get_bookings():
         all_bookings = db.session.query(UserBookings). \
             join(UserBookings.users). \
             join(UserBookings.flights). \
-            with_entities(UserBookings.booking_id, Flights.flight_number, Flights.price ,Users.email, Users.first_name,
+            with_entities(UserBookings.booking_id, Flights.flight_number, Flights.price, Users.email, Users.first_name,
                           Users.last_name). \
             all()
 
@@ -49,9 +50,10 @@ def get_booking(booking_id):
     # TODO: Add Bearer Token
 
     try:
-        booking = db.session.query(UserBookings).get(booking_id)
-        if booking:
-            return {"Booking": booking.to_json()}, 200
+        bookings = db.session.query(UserBookings).filter_by(booking_id=str(booking_id)).all()
+        if bookings:
+            bookings_list = [booking.to_json() for booking in bookings]
+            return jsonify({"Booking": bookings_list}), 200
 
         return {"Message": f"Booking with uuid {booking_id} doesn't exist in the DB!"}, 404
 
@@ -62,18 +64,29 @@ def get_booking(booking_id):
         db.session.close()
 
 
-@crud_bookings_bp.get("/bookings/<uuid:user_id>")
-def get_user_bookings(user_id):
+@crud_bookings_bp.get("/bookings/<string:user_id_email>")
+def get_user_bookings(user_id_email):
     # TODO: Add Bearer Token
 
+    # The uri is in the format user_id+email
+    user_id = user_id_email.split("+")[0]
     try:
         user = db.session.query(Users).get(user_id)
         if user:
-            user_bookings = db.session.query(UserBookings).filter_by(UserBookings.user_id == user_id).all()
+            all_user_bookings = db.session.query(UserBookings). \
+                join(UserBookings.users). \
+                join(UserBookings.flights). \
+                with_entities(UserBookings.booking_id, Flights.flight_number, Flights.start_destination,
+                              Flights.end_destination, Flights.takeoff_time, Flights.takeoff_time, Flights.price,
+                              Users.email,
+                              Users.first_name,
+                              Users.last_name). \
+                filter_by(user_id=user_id).all()
 
-            # TODO: Show all info for flights
-            bookings = [booking.to_json for booking in user_bookings]
-            return {f"All bookings for user with uuid {user_id}": bookings}, 200
+            # When querying individual rows the row is a KeyedTuple which has an _asdict method
+            bookings = [booking._asdict() for booking in all_user_bookings]
+
+            return jsonify({"User's Bookings": bookings}), 200
 
         return {"Message": f"User with uuid {user_id} doesn't exist in the DB!"}, 404
 
@@ -89,7 +102,7 @@ def delete_user(booking_id):
     # TODO: Add BEARER TOKEN
 
     try:
-        booking = db.session.query(UserBookings).get(booking_id)
+        booking = db.session.query(UserBookings).filter_by(booking_id=str(booking_id)).first()
         if booking:
             db.session.delete(booking)
             db.session.commit()
