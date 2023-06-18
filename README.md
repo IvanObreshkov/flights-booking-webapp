@@ -14,7 +14,8 @@ The hook auto-updates the `requirements.txt` file
 The Python version used for this project is 3.10.11
 #### How to install Python 3.10.11
 To make your life easier it is recommended to use `pyenv`. Here is an excellent [guide](https://brain2life.hashnode.dev/how-to-install-pyenv-python-version-manager-on-ubuntu-2004) on how to install it.
-Run:
+To install Python 3.10.11 using `pyenv` run:
+
 ```bash
 pyenv install 3.10.11
 ```
@@ -26,6 +27,8 @@ To create your virtual environment run:
 ```shell 
 cd api && pyenv virtualenv 3.10.11 fllights-env
 ```
+Make sure you are in the `/api` folder and run: 
+
 ```shell
 pyenv local flights-env
 ```
