@@ -1,11 +1,14 @@
 import re
-import sqlalchemy
-from werkzeug.exceptions import InternalServerError
-from sqlalchemy.exc import IntegrityError
+
 from flask import Blueprint, request
 from flask_expects_json import expects_json
+from sqlalchemy.exc import IntegrityError
+from werkzeug.exceptions import InternalServerError
+
 from database import db
 from models.flights_model import Flights
+from models.user_bookings_model import UserBookings
+from models.users_model import Users
 
 crud_flights_bp = Blueprint("flights", __name__)
 
@@ -46,20 +49,7 @@ update_flight_schema = {
 'additionalProperties': False
 }
 
-
-@crud_flights_bp.get("/flights")
-def get_flights():
-    try:
-        all_flights = db.session.query(Flights).all()
-        users_list = [flight.to_json() for flight in all_flights]
-
-        return {"Flights": users_list}, 200
-    except Exception as e:
-        return {"Message": "Couldn't retrieve flights from DB!", "Error": str(e)}, 500
-    finally:
-        db.session.close()
-
-@crud_flights_bp.route("/flight", methods=['POST'])
+@crud_flights_bp.post("/flights")
 @expects_json(flights_schema, check_formats=True)
 def add_flight():
     try:
@@ -83,12 +73,6 @@ def add_flight():
 
         return {"Message": "New flight added to DB!"}
 
-    # except IntegrityError as e:
-        # Handle integrity constraint violation (e.g., duplicate entry)
-        # return {"Message": "Flight already exists in the database."}, 409
-    # except Exception as e:
-        # Handle any other exceptions or errors
-        # return {"Message": "Failed to add flight.", "Error": str(e)}, 500
     except IntegrityError as e:
         db.session.rollback()
         pattern = r"\"(.*?)\""
@@ -98,6 +82,64 @@ def add_flight():
     except Exception as e:
         # Handle any other exceptions and errors
         raise InternalServerError(f'Registration failed! Please try again later!, Error: {str(e)}')
+    finally:
+        db.session.close()
+
+@crud_flights_bp.get("/flights")
+def get_flights():
+    try:
+        all_flights = db.session.query(Flights).all()
+        users_list = [flight.to_json() for flight in all_flights]
+
+        return {"Flights": users_list}, 200
+    except Exception as e:
+        return {"Message": "Couldn't retrieve flights from DB!", "Error": str(e)}, 500
+    finally:
+        db.session.close()
+@crud_flights_bp.get("/flights/<flight_number>")
+def get_flight(flight_number):
+    # TODO: Add BEARER TOKEN
+
+    try:
+        flight = db.session.query(Flights).get(flight_number)
+        if flight:
+            return {"Flight": flight.to_json()}, 200
+
+        return {"Message": f"Flight with uuid {flight_number} doesn't exist in the DB!"}, 404
+
+    except Exception as e:
+        return {"Message": f"Couldn't retrieve flight with number {flight_number} from DB!", "Error": str(e)}, 500
+
+    finally:
+        db.session.close()
+
+@crud_flights_bp.get("/flights/<string:flight_number>/passengers")
+def get_flight_passengers(flight_number):
+    # TODO: Add Bearer Token
+
+    try:
+        flight = db.session.query(Flights).get(flight_number)
+        if flight:
+            all_passengers = db.session.query(UserBookings). \
+                join(UserBookings.users). \
+                join(UserBookings.flights). \
+                with_entities(UserBookings.booking_id,
+                              Users.id,
+                              Users.email,
+                              Users.first_name,
+                              Users.last_name). \
+                filter_by(flight_number=flight_number).all()
+
+            # When querying individual rows the row is a KeyedTuple which has an _asdict method
+            passengers = [passenger._asdict() for passenger in all_passengers]
+
+            return {f"Passengers for flight {flight_number}": passengers}, 200
+
+        return {"Message": f"Flight with uuid {flight_number} doesn't exist in the DB!"}, 404
+
+    except Exception as e:
+        return {"Message": f"Couldn't passengers for flight {flight_number} from DB!", "Error": str(e)}, 500
+
     finally:
         db.session.close()
 

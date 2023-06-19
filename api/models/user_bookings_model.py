@@ -1,8 +1,8 @@
 import uuid
 
 import sqlalchemy
-from sqlalchemy import ForeignKey, String, Column
-from sqlalchemy.orm import backref, Mapped, mapped_column, relationship
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship
 
 from database import db
 
@@ -10,7 +10,7 @@ from database import db
 class UserBookings(db.Model):
     __tablename__ = "user_bookings"
 
-    booking_id = sqlalchemy.Column(sqlalchemy.String(10), primary_key=True, default=str(uuid.uuid4), unique=True)
+    booking_id = sqlalchemy.Column(sqlalchemy.String(255), primary_key=True, default=str(uuid.uuid4()), unique=True)
     flight_number = sqlalchemy.Column(ForeignKey('flights.flight_number'), primary_key=True)
     user_id = sqlalchemy.Column(ForeignKey('users.id'), primary_key=True)
 

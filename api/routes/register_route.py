@@ -4,14 +4,12 @@
 
 import re
 
-from sqlalchemy.exc import IntegrityError
-from werkzeug.exceptions import InternalServerError
-
-import sqlalchemy
 from flask import Blueprint
 from flask import request
 from flask_bcrypt import Bcrypt
 from flask_expects_json import expects_json
+from sqlalchemy.exc import IntegrityError
+from werkzeug.exceptions import InternalServerError
 
 from database import db
 from models.users_model import Users
@@ -32,7 +30,7 @@ schema = {
 }
 
 
-@register_bp.route("/register", methods=['POST'])
+@register_bp.post("/register")
 @expects_json(schema, check_formats=True)
 def register_user():
     try:
