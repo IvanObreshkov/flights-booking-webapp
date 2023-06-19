@@ -33,6 +33,7 @@ def add_booking():
         flight = db.session.query(Flights).get(flight_number)
 
         if user and flight:
+
             existing_booking = db.session.query(UserBookings).filter_by(user_id=user_id,
                                                                         flight_number=flight_number).all()
             if not existing_booking:
