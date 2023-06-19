@@ -33,11 +33,17 @@ def add_booking():
         flight = db.session.query(Flights).get(flight_number)
 
         if user and flight:
-            new_booking = UserBookings(user_id=user_id, flight_number=flight_number)
-            db.session.add(new_booking)
-            db.session.commit()
 
-            return {"Message": "New booking added to DB!"}, 200
+            existing_booking = db.session.query(UserBookings).filter_by(user_id=user_id,
+                                                                        flight_number=flight_number).all()
+            if not existing_booking:
+                new_booking = UserBookings(user_id=user_id, flight_number=flight_number)
+                db.session.add(new_booking)
+                db.session.commit()
+
+                return {"Message": "New booking added to DB!"}, 200
+
+            return {"Message": f"User with uuid {user_id} has already booked flight {flight_number}!"}, 409
 
         elif not user:
             return {"Message": f"User with uuid {user_id} doesn't exist in the DB!"}, 404
