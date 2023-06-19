@@ -1,6 +1,6 @@
 import re
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from flask_expects_json import expects_json
 from sqlalchemy.exc import IntegrityError
 
@@ -21,6 +21,40 @@ bookings_schema = {
     'additionalProperties': False
 }
 
+@crud_bookings_bp.post("/bookings")
+@expects_json(bookings_schema, check_formats=True)
+def add_booking():
+    try:
+        json_data = request.json
+        user_id = json_data["user_id"]
+        flight_number = json_data["flight_number"]
+
+        user = db.session.query(Users).get(user_id)
+        flight = db.session.query(Flights).get(flight_number)
+
+        if user and flight:
+            new_booking = UserBookings(user_id=user_id, flight_number=flight_number)
+            db.session.add(new_booking)
+            db.session.commit()
+
+            return {"Message": "New booking added to DB!"}, 200
+
+        elif not user:
+            return {"Message": f"User with uuid {user_id} doesn't exist in the DB!"}, 404
+
+        elif not flight:
+            return {"Message": f"Flight with number: {flight_number} doesn't exist in the DB!"}, 404
+
+    except IntegrityError as e:
+        db.session.rollback()
+        pattern = r"\"(.*?)\""
+        matches = re.findall(pattern, str(e))
+        if matches:
+            return {"Error": f"{matches[0]}"}, 409
+    except Exception as e:
+        return {"Message": f"Couldn't create a new booking. Please try again later!", "Error": str(e)}, 500
+    finally:
+        db.session.close()
 
 @crud_bookings_bp.get("/bookings")
 def get_bookings():
@@ -44,32 +78,10 @@ def get_bookings():
     finally:
         db.session.close()
 
-
-@crud_bookings_bp.get("/bookings/<uuid:booking_id>")
-def get_booking(booking_id):
+@crud_bookings_bp.get("/bookings/<uuid:user_id>")
+def get_user_bookings(user_id):
     # TODO: Add Bearer Token
 
-    try:
-        bookings = db.session.query(UserBookings).filter_by(booking_id=str(booking_id)).all()
-        if bookings:
-            bookings_list = [booking.to_json() for booking in bookings]
-            return jsonify({"Booking": bookings_list}), 200
-
-        return {"Message": f"Booking with uuid {booking_id} doesn't exist in the DB!"}, 404
-
-    except Exception as e:
-        return {"Message": f"Couldn't retrieve booking with uuid {booking_id} from DB!", "Error": str(e)}, 500
-
-    finally:
-        db.session.close()
-
-
-@crud_bookings_bp.get("/bookings/<string:user_id_email>")
-def get_user_bookings(user_id_email):
-    # TODO: Add Bearer Token
-
-    # The uri is in the format user_id+email
-    user_id = user_id_email.split("+")[0]
     try:
         user = db.session.query(Users).get(user_id)
         if user:
@@ -98,7 +110,7 @@ def get_user_bookings(user_id_email):
 
 
 @crud_bookings_bp.delete("/bookings/<uuid:booking_id>")
-def delete_user(booking_id):
+def delete_booking(booking_id):
     # TODO: Add BEARER TOKEN
 
     try:
@@ -118,28 +130,3 @@ def delete_user(booking_id):
         db.session.close()
 
 
-@crud_bookings_bp.post("/bookings")
-@expects_json(bookings_schema, check_formats=True)
-def add_booking():
-    try:
-        json_data = request.json
-        user_id = json_data["user_id"]
-        flight_number = json_data["flight_number"]
-
-        new_booking = UserBookings(user_id=user_id, flight_number=flight_number)
-
-        db.session.add(new_booking)
-        db.session.commit()
-
-        return {"Message": "New booking added to DB!"}
-
-    except IntegrityError as e:
-        db.session.rollback()
-        pattern = r"\"(.*?)\""
-        matches = re.findall(pattern, str(e))
-        if matches:
-            return {"Error": f"{matches[0]}"}, 409
-    except Exception as e:
-        return {"Message": f"Couldn't create a new booking. Please try again later!", "Error": str(e)}, 500
-    finally:
-        db.session.close()
