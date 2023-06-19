@@ -49,6 +49,41 @@ update_flight_schema = {
 'additionalProperties': False
 }
 
+@crud_flights_bp.post("/flights")
+@expects_json(flights_schema, check_formats=True)
+def add_flight():
+    try:
+        json_data = request.json
+        start_destination = json_data["start_destination"]
+        end_destination = json_data["end_destination"]
+        takeoff_time = json_data["takeoff_time"]
+        landing_time = json_data['landing_time']
+        price = json_data['price']
+
+        new_flight = Flights(
+            start_destination=start_destination,
+            end_destination=end_destination,
+            takeoff_time=takeoff_time,
+            landing_time=landing_time,
+            price=price
+
+        )
+        db.session.add(new_flight)
+        db.session.commit()
+
+        return {"Message": "New flight added to DB!"}
+
+    except IntegrityError as e:
+        db.session.rollback()
+        pattern = r"\"(.*?)\""
+        matches = re.findall(pattern, str(e))
+        if matches:
+            return {"Error": f"{matches[0]}"}, 409
+    except Exception as e:
+        # Handle any other exceptions and errors
+        raise InternalServerError(f'Registration failed! Please try again later!, Error: {str(e)}')
+    finally:
+        db.session.close()
 
 @crud_flights_bp.get("/flights")
 def get_flights():
@@ -105,42 +140,6 @@ def get_flight_passengers(flight_number):
     except Exception as e:
         return {"Message": f"Couldn't passengers for flight {flight_number} from DB!", "Error": str(e)}, 500
 
-    finally:
-        db.session.close()
-
-@crud_flights_bp.post("/flights")
-@expects_json(flights_schema, check_formats=True)
-def add_flight():
-    try:
-        json_data = request.json
-        start_destination = json_data["start_destination"]
-        end_destination = json_data["end_destination"]
-        takeoff_time = json_data["takeoff_time"]
-        landing_time = json_data['landing_time']
-        price = json_data['price']
-
-        new_flight = Flights(
-            start_destination=start_destination,
-            end_destination=end_destination,
-            takeoff_time=takeoff_time,
-            landing_time=landing_time,
-            price=price
-
-        )
-        db.session.add(new_flight)
-        db.session.commit()
-
-        return {"Message": "New flight added to DB!"}
-
-    except IntegrityError as e:
-        db.session.rollback()
-        pattern = r"\"(.*?)\""
-        matches = re.findall(pattern, str(e))
-        if matches:
-            return {"Error": f"{matches[0]}"}, 409
-    except Exception as e:
-        # Handle any other exceptions and errors
-        raise InternalServerError(f'Registration failed! Please try again later!, Error: {str(e)}')
     finally:
         db.session.close()
 
