@@ -1,4 +1,5 @@
 import re
+import uuid
 
 from flask import Blueprint, request
 from flask_expects_json import expects_json
@@ -37,7 +38,7 @@ def add_booking():
             existing_booking = db.session.query(UserBookings).filter_by(user_id=user_id,
                                                                         flight_number=flight_number).all()
             if not existing_booking:
-                new_booking = UserBookings(user_id=user_id, flight_number=flight_number)
+                new_booking = UserBookings(booking_id=uuid.uuid4(), user_id=user_id, flight_number=flight_number)
                 db.session.add(new_booking)
                 db.session.commit()
 

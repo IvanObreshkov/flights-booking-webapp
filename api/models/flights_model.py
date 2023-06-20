@@ -1,5 +1,3 @@
-import uuid
-
 import sqlalchemy
 from sqlalchemy.orm import relationship
 
@@ -9,7 +7,7 @@ from database import db
 class Flights(db.Model):
     __tablename__ = "flights"
 
-    flight_number = sqlalchemy.Column(sqlalchemy.String(6), primary_key=True, default=str(uuid.uuid4().hex)[:6].upper(),
+    flight_number = sqlalchemy.Column(sqlalchemy.String(6), primary_key=True,
                                       nullable=False, unique=True)
     start_destination = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
     end_destination = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)

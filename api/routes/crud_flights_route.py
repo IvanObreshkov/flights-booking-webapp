@@ -1,4 +1,5 @@
 import re
+import uuid
 
 from flask import Blueprint, request
 from flask_expects_json import expects_json
@@ -60,18 +61,24 @@ def add_flight():
         landing_time = json_data['landing_time']
         price = json_data['price']
 
-        new_flight = Flights(
-            start_destination=start_destination,
-            end_destination=end_destination,
-            takeoff_time=takeoff_time,
-            landing_time=landing_time,
-            price=price
 
-        )
-        db.session.add(new_flight)
-        db.session.commit()
+        existing_flight = db.session.query(Flights).filter_by(start_destination=start_destination, end_destination=end_destination,
+                                                              takeoff_time=takeoff_time, landing_time=landing_time).all()
+        if not existing_flight:
+            new_flight = Flights(
+                flight_number=str(uuid.uuid4().hex)[:6].upper(),
+                start_destination=start_destination,
+                end_destination=end_destination,
+                takeoff_time=takeoff_time,
+                landing_time=landing_time,
+                price=price
+            )
+            db.session.add(new_flight)
+            db.session.commit()
 
-        return {"Message": "New flight added to DB!"}
+            return {"Message": "New flight added to DB!"}
+
+        return {"Message":"Cannot add the certain flight! A flight with the same data already exist in the database!"}
 
     except IntegrityError as e:
         db.session.rollback()
@@ -81,7 +88,7 @@ def add_flight():
             return {"Error": f"{matches[0]}"}, 409
     except Exception as e:
         # Handle any other exceptions and errors
-        raise InternalServerError(f'Registration failed! Please try again later!, Error: {str(e)}')
+        raise InternalServerError(f"Couldn't create a new flight. Please try again later!, Error: {str(e)}")
     finally:
         db.session.close()
 
