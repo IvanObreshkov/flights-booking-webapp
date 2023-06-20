@@ -3,6 +3,7 @@
 # https://flask.palletsprojects.com/en/2.3.x/tutorial/views/
 
 import re
+import uuid
 
 from flask import Blueprint
 from flask import request
@@ -46,6 +47,7 @@ def register_user():
         #  - Send verification emails
 
         new_user = Users(
+            id=str(uuid.uuid4()),
             first_name=first_name,
             last_name=last_name,
             email=email,
