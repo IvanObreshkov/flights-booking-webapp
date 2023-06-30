@@ -1,5 +1,3 @@
-import uuid
-
 import sqlalchemy
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
