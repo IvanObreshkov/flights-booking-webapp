@@ -14,7 +14,7 @@ class Users(db.Model):
     password = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
 
     user_bookings = relationship("UserBookings", back_populates="users",
-                                 cascade="all, delete-orphan")
+                                 cascade="all")
 
     def to_json(self):
         return {

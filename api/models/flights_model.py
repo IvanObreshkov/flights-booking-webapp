@@ -17,7 +17,7 @@ class Flights(db.Model):
     price = sqlalchemy.Column(sqlalchemy.Double, nullable=False)
 
     user_bookings = relationship("UserBookings", back_populates="flights",
-                                 cascade="all, delete-orphan")
+                                 cascade="all")
 
     def to_json(self):
         return {
