@@ -9,13 +9,15 @@ class Flights(db.Model):
 
     flight_number = sqlalchemy.Column(sqlalchemy.String(6), primary_key=True,
                                       nullable=False, unique=True)
-    start_destination = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
+    start_destination = sqlalchemy.Column(sqlalchemy.String(255),
+                                          nullable=False)
     end_destination = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
     takeoff_time = sqlalchemy.Column(sqlalchemy.String(16), nullable=False)
     landing_time = sqlalchemy.Column(sqlalchemy.String(16), nullable=False)
     price = sqlalchemy.Column(sqlalchemy.Double, nullable=False)
 
-    user_bookings = relationship("UserBookings", back_populates="flights")
+    user_bookings = relationship("UserBookings", back_populates="flights",
+                                 cascade="all, delete-orphan")
 
     def to_json(self):
         return {

@@ -10,8 +10,10 @@ from database import db
 class UserBookings(db.Model):
     __tablename__ = "user_bookings"
 
-    booking_id = sqlalchemy.Column(sqlalchemy.String(255), primary_key=True, unique=True)
-    flight_number = sqlalchemy.Column(ForeignKey('flights.flight_number'), primary_key=True)
+    booking_id = sqlalchemy.Column(sqlalchemy.String(255), primary_key=True,
+                                   unique=True)
+    flight_number = sqlalchemy.Column(ForeignKey('flights.flight_number'),
+                                      primary_key=True)
     user_id = sqlalchemy.Column(ForeignKey('users.id'), primary_key=True)
 
     users = relationship("Users", back_populates="user_bookings")

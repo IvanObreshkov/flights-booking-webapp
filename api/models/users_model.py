@@ -5,13 +5,16 @@ from database import db
 
 class Users(db.Model):
     __tablename__ = "users"
-    id = sqlalchemy.Column(sqlalchemy.String(36), primary_key=True, nullable=False, unique=True)
+    id = sqlalchemy.Column(sqlalchemy.String(36), primary_key=True,
+                           nullable=False, unique=True)
     first_name = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
     last_name = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
-    email = sqlalchemy.Column(sqlalchemy.String(255), nullable=False, unique=True)
+    email = sqlalchemy.Column(sqlalchemy.String(255), nullable=False,
+                              unique=True)
     password = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
 
-    user_bookings = relationship("UserBookings", back_populates="users")
+    user_bookings = relationship("UserBookings", back_populates="users",
+                                 cascade="all, delete-orphan")
 
     def to_json(self):
         return {
