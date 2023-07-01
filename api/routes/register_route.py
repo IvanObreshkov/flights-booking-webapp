@@ -16,7 +16,7 @@ from database import db
 from models.users_model import Users
 
 register_bp = Blueprint("register", __name__)
-bcrypt = Bcrypt()
+flask_bcrypt = Bcrypt()
 
 schema = {
     'type': 'object',
@@ -40,7 +40,8 @@ def register_user():
         last_name = json_data["last_name"]
         email = json_data["email"]
         password = json_data["password"]
-        hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
+        hashed_password = flask_bcrypt.generate_password_hash(password).decode(
+            "utf-8")
 
         # TODO:
         #  - Implement JWT
@@ -66,6 +67,7 @@ def register_user():
             return {"Error": f"{matches[0]}"}, 409
     except Exception as e:
         # Handle any other exceptions and errors
-        raise InternalServerError(f'Registration failed! Please try again later!, Error: {str(e)}')
+        raise InternalServerError(
+            f'Registration failed! Please try again later!, Error: {str(e)}')
     finally:
         db.session.close()
