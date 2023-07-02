@@ -1,6 +1,7 @@
 import os
 import uuid
 
+import flask_bcrypt
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
@@ -49,8 +50,8 @@ for flight in flights_data:
         landing_time=flight["landing_time"],
         price=flight["price"]
     )
-    db.session.add(new_flight)
-    db.session.commit()
+    session.add(new_flight)
+    session.commit()
 
 # Seed data for Users
 users_data = [
@@ -78,15 +79,16 @@ users_data = [
 ]
 
 for user in users_data:
+    hashed_password = flask_bcrypt.generate_password_hash(user["password"]).decode("utf-8")
     new_user = Users(
         id=user["id"],
         first_name=user["first_name"],
         last_name=user["last_name"],
         email=user["email"],
-        password=user["password"]
+        password=hashed_password
     )
-    db.session.add(new_user)
-    db.session.commit()
+    session.add(new_user)
+    session.commit()
 
 bookings_data = [
     {
@@ -106,28 +108,20 @@ bookings_data = [
     }
 ]
 
-# for booking in bookings_data:
-# new_booking = UserBookings(
-# user_id=booking["id"],
-# flight_number=booking["flight_number"],
-# booking_id=booking["booking_id"],
-# )
-# session.add(new_booking)
-
 for booking in bookings_data:
     user_id = booking["user_id"],
     flight_number = booking["flight_number"],
     booking_id = booking["booking_id"]
 
-    user = db.session.query(Users).get(user_id)
-    flight = db.session.query(Flights).get(flight_number)
-    existing_booking = db.session.query(UserBookings).filter_by(user_id=user_id,
+    user = session.get(Users, user_id)
+    flight = session.get(Flights, flight_number)
+    existing_booking = session.query(UserBookings).filter_by(user_id=user_id,
                                                                 flight_number=flight_number).all()
     if not existing_booking:
         new_booking = UserBookings(booking_id=booking_id, user_id=user_id, flight_number=flight_number)
-        db.session.add(new_booking)
-        db.session.commit()
+        session.add(new_booking)
+        session.commit()
 # Commit the changes
-db.session.commit()
-
+session.commit()
+session.close()
 print("Data seeded...")
