@@ -7,8 +7,10 @@ from sqlalchemy.orm import sessionmaker
 
 from sqlalchemy_utils import database_exists, create_database
 
+from database import db
 from models.flights_model import Flights
 from models.users_model import Users
+from models.user_bookings_model import UserBookings
 
 load_dotenv()
 
@@ -26,54 +28,106 @@ session = Session()
 # Create tables if they don't exist
 Flights.metadata.create_all(engine)
 Users.metadata.create_all(engine)
+UserBookings.metadata.create_all(engine)
 
 # Seed data for Flights
 flights_data = [
-    {"start_destination": "London", "end_destination": "Sofia", "takeoff_time": 1352177617,
-     "landing_time": 1007873885},
-    {"start_destination": "Varna", "end_destination": "Plovidv", "takeoff_time": 1868917941,
-     "landing_time": 1322466274},
-    {"start_destination": "Frankfurt", "end_destination": "New York", "takeoff_time": 1408940875,
-     "landing_time": 1755671246},
+    {"start_destination": "London", "end_destination": "Sofia", "takeoff_time": "2023-07-30 06:45",
+     "landing_time": "2023-07-30 09:15", "price": 235.70, "flight_number": str(uuid.uuid4().hex)[:6].upper()},
+    {"start_destination": "Paris", "end_destination": "Rome", "takeoff_time": "2023-08-03 11:35",
+     "landing_time": "2023-08-03 13:10", "price": 273.40, "flight_number": str(uuid.uuid4().hex)[:6].upper()},
+    {"start_destination": "Berlin", "end_destination": "Skopje", "takeoff_time": "2023-07-17 16:00",
+     "landing_time": "2023-07-17 18:20", "price": 179.90, "flight_number": str(uuid.uuid4().hex)[:6].upper()},
 ]
 
 for flight in flights_data:
     new_flight = Flights(
-        flight_number=str(uuid.uuid4().hex)[:6].upper(),
+        flight_number=flight["flight_number"],
         start_destination=flight["start_destination"],
         end_destination=flight["end_destination"],
         takeoff_time=flight["takeoff_time"],
-        landing_time=flight["landing_time"]
+        landing_time=flight["landing_time"],
+        price=flight["price"]
     )
-    session.add(new_flight)
+    db.session.add(new_flight)
+    db.session.commit()
 
 # Seed data for Users
 users_data = [
     {
-        "first_name": "John",
-        "last_name": "Doe",
-        "email": "john@example.com",
+        "id": str(uuid.uuid4()),
+        "first_name": "Jermain",
+        "last_name": "Defoe",
+        "email": "jermaind@gmail.com",
         "password": "password123"
     },
     {
+        "id": str(uuid.uuid4()),
         "first_name": "Jane",
         "last_name": "Smith",
-        "email": "jane@example.com",
+        "email": "janesm@gmail.com",
         "password": "password456"
     },
+    {
+        "id": str(uuid.uuid4()),
+        "first_name": "Borislav",
+        "last_name": "Angelov",
+        "email": "boroangelov@gmail.com",
+        "password": "password789"
+    }
 ]
 
 for user in users_data:
     new_user = Users(
-        id=str(uuid.uuid4()),
+        id=user["id"],
         first_name=user["first_name"],
         last_name=user["last_name"],
         email=user["email"],
         password=user["password"]
     )
-    session.add(new_user)
+    db.session.add(new_user)
+    db.session.commit()
 
+bookings_data = [
+    {
+        "user_id": users_data[2]["id"],
+        "flight_number": flights_data[1]["flight_number"],
+        "booking_id": uuid.uuid4()
+    },
+    {
+        "user_id": users_data[1]["id"],
+        "flight_number": flights_data[0]["flight_number"],
+        "booking_id": uuid.uuid4()
+    },
+    {
+        "user_id": users_data[0]["id"],
+        "flight_number": flights_data[2]["flight_number"],
+        "booking_id": uuid.uuid4()
+    }
+]
+
+# for booking in bookings_data:
+# new_booking = UserBookings(
+# user_id=booking["id"],
+# flight_number=booking["flight_number"],
+# booking_id=booking["booking_id"],
+# )
+# session.add(new_booking)
+
+for booking in bookings_data:
+    user_id = booking["user_id"],
+    flight_number = booking["flight_number"],
+    booking_id = booking["booking_id"]
+
+    user = db.session.query(Users).get(user_id)
+    flight = db.session.query(Flights).get(flight_number)
+    existing_booking = db.session.query(UserBookings).filter_by(user_id=user_id,
+                                                                flight_number=flight_number).all()
+    if not existing_booking:
+        new_booking = UserBookings(booking_id=booking_id, user_id=user_id, flight_number=flight_number)
+        db.session.add(new_booking)
+        db.session.commit()
 # Commit the changes
-session.commit()
+db.session.commit()
 
 print("Data seeded...")
