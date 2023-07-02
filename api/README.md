@@ -17,8 +17,8 @@ pip install -r requirements.txt
 ```python
 SECRET_KEY="your_secret_key"
 MYSQL_DATABASE_URI="mysql+pymysql://youruser:yourpassword@127.0.0.1/flights_users"
-MYSQL_USER="youruser"
-MYSQL_PASSWORD="yourpassword"
+ADMIN_EMAIL="admin_email"
+ADMIN_PASSWORD="admin_password"
 ```
 You can generate a secret key like this:
 
