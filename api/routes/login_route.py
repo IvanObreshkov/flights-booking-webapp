@@ -1,16 +1,16 @@
 import datetime
 import os
 
+import flask_bcrypt
 import jwt
 from dotenv import load_dotenv
 from flask import Blueprint, request
-from flask_bcrypt import Bcrypt
 from flask_expects_json import expects_json
+
 from database import db
 from models.users_model import Users
 
 login_bp = Blueprint("login", __name__)
-flask_bcrypt = Bcrypt()
 load_dotenv()
 
 login_schema = {
