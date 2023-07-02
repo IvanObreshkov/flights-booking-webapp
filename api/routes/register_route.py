@@ -5,9 +5,9 @@
 import re
 import uuid
 
+import flask_bcrypt
 from flask import Blueprint
 from flask import request
-from flask_bcrypt import Bcrypt
 from flask_expects_json import expects_json
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import InternalServerError
@@ -16,7 +16,6 @@ from database import db
 from models.users_model import Users
 
 register_bp = Blueprint("register", __name__)
-flask_bcrypt = Bcrypt()
 
 schema = {
     'type': 'object',
