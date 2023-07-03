@@ -5,6 +5,7 @@ from database import db
 
 class Users(db.Model):
     __tablename__ = "users"
+
     id = sqlalchemy.Column(sqlalchemy.String(36), primary_key=True,
                            nullable=False, unique=True)
     first_name = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
