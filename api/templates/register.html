@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Register form</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
         <div align="center">
           <div align="center" class="border">
              <div class="header">
                 <h1 class="word">Register</h1>
-             </div></br></br></br>
             <h2 class="word">
                 <form action="{{ url_for('register') }}" method="post">
                     <input id="first_name" name="first_name" type="text" placeholder="Enter Your First name" class="textbox"/></br></br>
@@ -21,6 +21,7 @@
             </h2>
             <p class="bottom">Already have an account?  <a class="bottom" href="{{url_for('login')}}"> Sign In here</a></p>
           </div>
+        </div>
         </div>
 </body>
 </html>
