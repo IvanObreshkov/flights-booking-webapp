@@ -11,7 +11,8 @@
              <div class="header">
                 <h1 class="word">Register</h1>
             <h2 class="word">
-                <form action="{{ url_for('register') }}" method="post">
+                <form action="{{ url_for('register.register_user') }}" method="post">
+                    <div class="msg">{{ msg }}</div>
                     <input id="first_name" name="first_name" type="text" placeholder="Enter Your First name" class="textbox"/></br></br>
                     <input id="last_name" name="last_name" type="text" placeholder="Enter Your Last name" class="textbox"/></br></br>
                     <input id="email" name="email" type="text" placeholder="Enter Your Email ID" class="textbox"/></br></br>

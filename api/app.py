@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_migrate import Migrate
 
 from config import DevConfig
@@ -28,6 +28,6 @@ def create_app(config_class=DevConfig):
 
     @app.route("/")
     def hello():
-        return "Hello, World!"
+        return render_template("index.html")
 
     return app
