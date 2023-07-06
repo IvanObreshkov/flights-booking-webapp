@@ -98,6 +98,8 @@ def add_flight():
 @crud_flights_bp.get("/flights")
 def get_flights():
     token = jwt.decode(request.cookies.get("token"), os.getenv("SECRET_KEY"), algorithms=["HS256"])
+    # FIXME:
+    #   - PyJWT automatically checks that the token has expired and returns 500 status code
     if int(time.time()) - token["exp"] >= 60:
         return {"Message": "Auth token expired."}, 498
     if token["admin"]:
