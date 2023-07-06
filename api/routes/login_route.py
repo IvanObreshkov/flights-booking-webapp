@@ -4,7 +4,7 @@ import os
 import flask_bcrypt
 import jwt
 from dotenv import load_dotenv
-from flask import Blueprint, request, render_template
+from flask import Blueprint, request, render_template, make_response
 
 from database import db
 from models.users_model import Users
@@ -36,6 +36,13 @@ def login_users():
                                             raw_password):
             if os.getenv("ADMIN_EMAIL") == user.email and os.getenv(
                     "ADMIN_PASSWORD") == raw_password:
+                # TODO:
+                #   - Add protection of cookies from CSRF attacks
+                #   - Add refresh token logic
+
+                # FIXME:
+                #   - Change exp time to what in the industry standard for access_tokens
+
                 payload = {"sub": user.id,
                            "name": f"{user.first_name} {user.last_name}",
                            "email": user.email, "admin": True,
@@ -51,8 +58,9 @@ def login_users():
 
             token = jwt.encode(payload, os.getenv("SECRET_KEY"),
                                algorithm="HS256")
-
-            return render_template('login.html', msg=str(token))
+            resp = make_response(render_template('login.html', msg=str(token)))
+            resp.set_cookie("token",token,httponly=True)
+            return resp
 
         return render_template('login.html', msg="Invalid password!"), 401
 

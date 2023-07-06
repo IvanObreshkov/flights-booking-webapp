@@ -1,6 +1,9 @@
+import os
 import re
+import time
 import uuid
 
+import jwt
 from flask import Blueprint, request
 from flask_expects_json import expects_json
 from sqlalchemy.exc import IntegrityError
@@ -94,15 +97,22 @@ def add_flight():
 
 @crud_flights_bp.get("/flights")
 def get_flights():
-    try:
-        all_flights = db.session.query(Flights).all()
-        users_list = [flight.to_json() for flight in all_flights]
+    token = jwt.decode(request.cookies.get("token"), os.getenv("SECRET_KEY"), algorithms=["HS256"])
+    if int(time.time()) - token["exp"] >= 60:
+        return {"Message": "Auth token expired."}, 498
+    if token["admin"]:
+        try:
+            all_flights = db.session.query(Flights).all()
+            users_list = [flight.to_json() for flight in all_flights]
 
-        return {"Flights": users_list}, 200
-    except Exception as e:
-        return {"Message": "Couldn't retrieve flights from DB!", "Error": str(e)}, 500
-    finally:
-        db.session.close()
+            return {"Flights": users_list}, 200
+        except Exception as e:
+            return {"Message": "Couldn't retrieve flights from DB!", "Error": str(e)}, 500
+        finally:
+            db.session.close()
+    else:
+        return {"Message": "You don't have access to this resource"}, 403
+
 @crud_flights_bp.get("/flights/<flight_number>")
 def get_flight(flight_number):
     # TODO: Add BEARER TOKEN
