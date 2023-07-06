@@ -1,3 +1,4 @@
+import datetime
 import os
 import re
 import time
@@ -97,24 +98,24 @@ def add_flight():
 
 @crud_flights_bp.get("/flights")
 def get_flights():
-    token = jwt.decode(request.cookies.get("token"), os.getenv("SECRET_KEY"), algorithms=["HS256"])
-    # FIXME:
-    #   - PyJWT automatically checks that the token has expired and returns 500 status code
-    if int(time.time()) - token["exp"] >= 60:
+    try:
+        token = jwt.decode(request.cookies.get("token"), os.getenv("SECRET_KEY"), algorithms=["HS256"])
+
+        if token["admin"]:
+            try:
+                all_flights = db.session.query(Flights).all()
+                users_list = [flight.to_json() for flight in all_flights]
+
+                return {"Flights": users_list}, 200
+            except Exception as e:
+                return {"Message": "Couldn't retrieve flights from DB!", "Error": str(e)}, 500
+            finally:
+                db.session.close()
+        else:
+            return {"Message": "You don't have access to this resource"}, 403
+
+    except jwt.exceptions.ExpiredSignatureError:
         return {"Message": "Auth token expired."}, 498
-    if token["admin"]:
-        try:
-            all_flights = db.session.query(Flights).all()
-            users_list = [flight.to_json() for flight in all_flights]
-
-            return {"Flights": users_list}, 200
-        except Exception as e:
-            return {"Message": "Couldn't retrieve flights from DB!", "Error": str(e)}, 500
-        finally:
-            db.session.close()
-    else:
-        return {"Message": "You don't have access to this resource"}, 403
-
 @crud_flights_bp.get("/flights/<flight_number>")
 def get_flight(flight_number):
     # TODO: Add BEARER TOKEN
