@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Login form</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
 </head>
 <body>
 <div align="center">
@@ -11,7 +11,7 @@
              <div class="header">
                 <h1 class="word">Login</h1>
             <h2 class="word">
-                <form action="{{ url_for('login.login_users') }}" method="post">
+                <form action="{{url_for('login.login_users')}}" method="post">
                     <div class="msg">{{ msg }}</div>
                     <input id="email" name="email" type="text" placeholder="Enter Your Email" class="textbox"/></br></br>
                     <input id="password" name="password" type="password" placeholder="Enter Your Password" class="textbox"/></br></br>
