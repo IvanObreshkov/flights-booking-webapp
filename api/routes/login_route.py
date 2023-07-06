@@ -5,7 +5,6 @@ import flask_bcrypt
 import jwt
 from dotenv import load_dotenv
 from flask import Blueprint, request, render_template
-from flask_expects_json import expects_json
 
 from database import db
 from models.users_model import Users
@@ -36,12 +35,13 @@ def login_users():
         if flask_bcrypt.check_password_hash(hashed_user_password,
                                             raw_password):
             if os.getenv("ADMIN_EMAIL") == user.email and os.getenv(
-                    "ADMIN_PASSWORD") == user.password:
+                    "ADMIN_PASSWORD") == raw_password:
                 payload = {"sub": user.id,
                            "name": f"{user.first_name} {user.last_name}",
                            "email": user.email, "admin": True,
                            "exp": datetime.datetime.utcnow() + datetime.timedelta(
                                hours=1)}
+
             else:
                 payload = {"sub": user.id,
                            "name": f"{user.first_name} {user.last_name}",
