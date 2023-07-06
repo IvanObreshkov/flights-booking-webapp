@@ -6,9 +6,8 @@ import re
 import uuid
 
 import flask_bcrypt
-from flask import Blueprint
+from flask import Blueprint, render_template
 from flask import request
-from flask_expects_json import expects_json
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import InternalServerError
 
@@ -31,14 +30,14 @@ schema = {
 
 
 @register_bp.post("/register")
-@expects_json(schema, check_formats=True)
 def register_user():
     try:
-        json_data = request.json
-        first_name = json_data["first_name"]
-        last_name = json_data["last_name"]
-        email = json_data["email"]
-        password = json_data["password"]
+        data = request.form
+        print(data)
+        first_name = data["first_name"]
+        last_name = data["last_name"]
+        email = data["email"]
+        password = data["password"]
         hashed_password = flask_bcrypt.generate_password_hash(password).decode(
             "utf-8")
 
@@ -56,17 +55,22 @@ def register_user():
         db.session.add(new_user)
         db.session.commit()
 
-        return {"Message": "New user added to DB!"}
+        return render_template('register.html', msg="New user added to DB!")
 
     except IntegrityError as e:
         db.session.rollback()
         pattern = r"\"(.*?)\""
         matches = re.findall(pattern, str(e))
         if matches:
-            return {"Error": f"{matches[0]}"}, 409
+            return render_template('register.html', msg=f"{matches[0]}"), 409
     except Exception as e:
         # Handle any other exceptions and errors
         raise InternalServerError(
             f'Registration failed! Please try again later!, Error: {str(e)}')
     finally:
         db.session.close()
+
+
+@register_bp.get("/register")
+def get_register_form():
+    return render_template("register.html"), 200
