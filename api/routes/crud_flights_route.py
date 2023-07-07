@@ -3,6 +3,7 @@ import os
 import re
 import time
 import uuid
+from functools import wraps
 
 import jwt
 from flask import Blueprint, request
@@ -32,8 +33,8 @@ flights_schema = {
                          },
         'price': {'type': 'number'}
     },
-'required': ['start_destination', 'end_destination', 'takeoff_time', 'landing_time', 'price'],
-'additionalProperties': False
+    'required': ['start_destination', 'end_destination', 'takeoff_time', 'landing_time', 'price'],
+    'additionalProperties': False
 }
 
 update_flight_schema = {
@@ -51,8 +52,9 @@ update_flight_schema = {
                          },
         'price': {'type': 'number'}
     },
-'additionalProperties': False
+    'additionalProperties': False
 }
+
 
 @crud_flights_bp.post("/flights")
 @expects_json(flights_schema, check_formats=True)
@@ -65,9 +67,10 @@ def add_flight():
         landing_time = json_data['landing_time']
         price = json_data['price']
 
-
-        existing_flight = db.session.query(Flights).filter_by(start_destination=start_destination, end_destination=end_destination,
-                                                              takeoff_time=takeoff_time, landing_time=landing_time).all()
+        existing_flight = db.session.query(Flights).filter_by(start_destination=start_destination,
+                                                              end_destination=end_destination,
+                                                              takeoff_time=takeoff_time,
+                                                              landing_time=landing_time).all()
         if not existing_flight:
             new_flight = Flights(
                 flight_number=str(uuid.uuid4().hex)[:6].upper(),
@@ -82,7 +85,7 @@ def add_flight():
 
             return {"Message": "New flight added to DB!"}
 
-        return {"Message":"Cannot add the certain flight! A flight with the same data already exist in the database!"}
+        return {"Message": "Cannot add the certain flight! A flight with the same data already exist in the database!"}
 
     except IntegrityError as e:
         db.session.rollback()
@@ -96,12 +99,13 @@ def add_flight():
     finally:
         db.session.close()
 
+
 @crud_flights_bp.get("/flights")
 def get_flights():
     try:
         token = jwt.decode(request.cookies.get("token"), os.getenv("SECRET_KEY"), algorithms=["HS256"])
 
-        if token["admin"]:
+        if token.get("admin"):
             try:
                 all_flights = db.session.query(Flights).all()
                 users_list = [flight.to_json() for flight in all_flights]
@@ -116,6 +120,10 @@ def get_flights():
 
     except jwt.exceptions.ExpiredSignatureError:
         return {"Message": "Auth token expired."}, 498
+    except jwt.exceptions.InvalidSignatureError:
+        return {"Message": "Invalid token signature."}, 401
+
+
 @crud_flights_bp.get("/flights/<flight_number>")
 def get_flight(flight_number):
     # TODO: Add BEARER TOKEN
@@ -132,6 +140,7 @@ def get_flight(flight_number):
 
     finally:
         db.session.close()
+
 
 @crud_flights_bp.get("/flights/<string:flight_number>/passengers")
 def get_flight_passengers(flight_number):
@@ -162,6 +171,7 @@ def get_flight_passengers(flight_number):
 
     finally:
         db.session.close()
+
 
 @crud_flights_bp.delete("/flights/<string:flight_number_uuid>")
 def delete_user(flight_number_uuid):
