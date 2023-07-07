@@ -25,6 +25,9 @@ bookings_schema = {
 @crud_bookings_bp.post("/bookings")
 @expects_json(bookings_schema, check_formats=True)
 def add_booking():
+    # TODO: Add Bearer Token for user
+
+
     try:
         json_data = request.json
         user_id = json_data["user_id"]
@@ -87,7 +90,7 @@ def get_bookings():
 
 @crud_bookings_bp.get("/bookings/<uuid:user_id>")
 def get_user_bookings(user_id):
-    # TODO: Add Bearer Token
+    # TODO: Add Bearer Token for user
 
     try:
         user = db.session.query(Users).get(user_id)
