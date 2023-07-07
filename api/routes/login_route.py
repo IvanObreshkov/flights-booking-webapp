@@ -59,7 +59,7 @@ def login_users():
             token = jwt.encode(payload, os.getenv("SECRET_KEY"),
                                algorithm="HS256")
             resp = make_response(render_template('login.html', msg=str(token)))
-            resp.set_cookie("token",token,httponly=True)
+            resp.set_cookie("token", token, httponly=True)
             return resp
 
         return render_template('login.html', msg="Invalid password!"), 401
