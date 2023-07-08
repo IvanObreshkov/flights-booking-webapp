@@ -103,7 +103,7 @@ def get_user_bookings(user_id):
                               Users.email,
                               Users.first_name,
                               Users.last_name). \
-                filter_by(user_id=user_id).all()
+                filter_by(user_id=str(user_id)).all()
 
             # When querying individual rows the row is a KeyedTuple which has an _asdict method
             bookings = [booking._asdict() for booking in all_user_bookings]
