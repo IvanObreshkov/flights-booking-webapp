@@ -1,11 +1,6 @@
-import datetime
-import os
 import re
-import time
 import uuid
-from functools import wraps
 
-import jwt
 from flask import Blueprint, request
 from flask_expects_json import expects_json
 from sqlalchemy.exc import IntegrityError
@@ -15,6 +10,7 @@ from database import db
 from models.flights_model import Flights
 from models.user_bookings_model import UserBookings
 from models.users_model import Users
+from utils import admin_required
 
 crud_flights_bp = Blueprint("flights", __name__)
 
@@ -101,29 +97,18 @@ def add_flight():
 
 
 @crud_flights_bp.get("/flights")
+@admin_required
 def get_flights():
     try:
-        token = jwt.decode(request.cookies.get("token"), os.getenv("SECRET_KEY"), algorithms=["HS256"])
+        all_flights = db.session.query(Flights).all()
+        users_list = [flight.to_json() for flight in all_flights]
 
-        if token.get("admin"):
-            try:
-                all_flights = db.session.query(Flights).all()
-                users_list = [flight.to_json() for flight in all_flights]
+        return {"Flights": users_list}, 200
+    except Exception as e:
+        return {"Message": "Couldn't retrieve flights from DB!", "Error": str(e)}, 500
+    finally:
+        db.session.close()
 
-                return {"Flights": users_list}, 200
-            except Exception as e:
-                return {"Message": "Couldn't retrieve flights from DB!", "Error": str(e)}, 500
-            finally:
-                db.session.close()
-        else:
-            return {"Message": "You don't have access to this resource"}, 403
-
-    except jwt.exceptions.ExpiredSignatureError:
-        return {"Message": "Auth token expired."}, 498
-    except jwt.exceptions.InvalidSignatureError:
-        return {"Message": "Invalid token signature."}, 401
-    except jwt.exceptions.DecodeError:
-        return {"Message": "No auth token provided."}, 401
 @crud_flights_bp.get("/flights/<flight_number>")
 def get_flight(flight_number):
     # TODO: Add BEARER TOKEN
