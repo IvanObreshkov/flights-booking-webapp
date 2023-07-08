@@ -122,8 +122,8 @@ def get_flights():
         return {"Message": "Auth token expired."}, 498
     except jwt.exceptions.InvalidSignatureError:
         return {"Message": "Invalid token signature."}, 401
-
-
+    except jwt.exceptions.DecodeError:
+        return {"Message": "No auth token provided."}, 401
 @crud_flights_bp.get("/flights/<flight_number>")
 def get_flight(flight_number):
     # TODO: Add BEARER TOKEN
