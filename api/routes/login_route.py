@@ -1,5 +1,6 @@
 import datetime
 import os
+import re
 
 import flask_bcrypt
 import jwt
@@ -27,6 +28,22 @@ login_schema = {
 def login_users():
     email = request.form["email"]
     raw_password = request.form["password"]
+
+    for key in request.form:
+        email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+
+        if request.form[key].strip() == '':
+            key_to_text_list = key.split('_')
+            key_to_text = ' '.join(key_to_text_list)
+            new_key = key_to_text.capitalize()
+            return render_template('login.html', msg=f'{new_key} cannot be empty!')
+
+        if key == 'email':
+            if not re.match(email_pattern, request.form[key]):
+                key_to_text_list = key.split('_')
+                key_to_text = ' '.join(key_to_text_list)
+                new_key = key_to_text.capitalize()
+                return render_template('login.html', msg=f'{new_key} is not in a valid format!')
 
     user = db.session.query(Users).filter_by(email=email).first()
     if user:
