@@ -9,6 +9,7 @@ from database import db
 from models.flights_model import Flights
 from models.user_bookings_model import UserBookings
 from models.users_model import Users
+from utils import admin_required
 
 crud_bookings_bp = Blueprint("bookings", __name__)
 
@@ -25,7 +26,8 @@ bookings_schema = {
 @crud_bookings_bp.post("/bookings")
 @expects_json(bookings_schema, check_formats=True)
 def add_booking():
-    # TODO: Add Bearer Token for user
+    # TODO:
+    #  - require user and admin jwt
 
 
     try:
@@ -68,7 +70,8 @@ def add_booking():
 
 @crud_bookings_bp.get("/bookings")
 def get_bookings():
-    # TODO: Add Bearer Token
+    # TODO:
+    #  - require admin jwt
 
     try:
         all_bookings = db.session.query(UserBookings). \
@@ -90,8 +93,9 @@ def get_bookings():
 
 @crud_bookings_bp.get("/bookings/<uuid:user_id>")
 def get_user_bookings(user_id):
-    # TODO: Add Bearer Token for user
-
+    # TODO:
+    #  - require jwt for admin and users
+    #  - If jwt["sub"] == user_id -> ok, else -> error
     try:
         user = db.session.query(Users).get(user_id)
         if user:
@@ -121,7 +125,8 @@ def get_user_bookings(user_id):
 
 @crud_bookings_bp.delete("/bookings/<uuid:booking_id>")
 def delete_booking(booking_id):
-    # TODO: Add BEARER TOKEN
+    # TODO:
+    #  - require admin jwt
 
     try:
         booking = db.session.query(UserBookings).filter_by(booking_id=str(booking_id)).first()

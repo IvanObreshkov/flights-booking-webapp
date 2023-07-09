@@ -24,7 +24,8 @@ schema = {
 
 @rud_users_bp.get("/users")
 def get_users():
-    # TODO: Add BEARER TOKEN
+    # TODO:
+    #  - require admin jwt
 
     try:
         all_users = db.session.query(Users).all()
@@ -39,7 +40,8 @@ def get_users():
 
 @rud_users_bp.get("/users/<uuid:user_uuid>")
 def get_user(user_uuid):
-    # TODO: Add BEARER TOKEN
+    # TODO:
+    #  - require admin jwt
 
     try:
         user = db.session.query(Users).get(user_uuid)
@@ -57,7 +59,8 @@ def get_user(user_uuid):
 
 @rud_users_bp.delete("/users/<uuid:user_uuid>")
 def delete_user(user_uuid):
-    # TODO: Add BEARER TOKEN
+    # TODO:
+    #  - require admin jwt
 
     try:
         user = db.session.query(Users).get(user_uuid)
@@ -79,7 +82,8 @@ def delete_user(user_uuid):
 @rud_users_bp.put("/users/<uuid:user_uuid>")
 @expects_json(schema, check_formats=True)
 def update_user(user_uuid):
-    # TODO: Add BEARER TOKEN
+    # TODO:
+    #  - require admin jwt
 
     try:
         user = db.session.query(Users).get(user_uuid)

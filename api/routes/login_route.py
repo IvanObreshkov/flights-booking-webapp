@@ -61,7 +61,7 @@ def login_users():
 
                 payload = {"sub": user.id,
                            "name": f"{user.first_name} {user.last_name}",
-                           "email": user.email, "admin": True,
+                           "email": user.email, "admin": False,
                            "exp": datetime.datetime.utcnow() + datetime.timedelta(
                                hours=1)}
 

@@ -55,6 +55,11 @@ update_flight_schema = {
 @crud_flights_bp.post("/flights")
 @expects_json(flights_schema, check_formats=True)
 def add_flight():
+
+    #TODO:
+    #  - require admin jwt
+
+
     try:
         json_data = request.json
         start_destination = json_data["start_destination"]
@@ -111,7 +116,8 @@ def get_flights():
 
 @crud_flights_bp.get("/flights/<flight_number>")
 def get_flight(flight_number):
-    # TODO: Add BEARER TOKEN
+    # TODO:
+    #  - require admin jwt
 
     try:
         flight = db.session.query(Flights).get(flight_number)
@@ -129,7 +135,8 @@ def get_flight(flight_number):
 
 @crud_flights_bp.get("/flights/<string:flight_number>/passengers")
 def get_flight_passengers(flight_number):
-    # TODO: Add Bearer Token
+    # TODO:
+    #  - require admin jwt
 
     try:
         flight = db.session.query(Flights).get(flight_number)
@@ -160,7 +167,8 @@ def get_flight_passengers(flight_number):
 
 @crud_flights_bp.delete("/flights/<string:flight_number_uuid>")
 def delete_user(flight_number_uuid):
-    # TODO: Add BEARER TOKEN
+    # TODO:
+    #  - require admin jwt
 
     try:
         user = db.session.query(Flights).get(flight_number_uuid)
@@ -182,7 +190,8 @@ def delete_user(flight_number_uuid):
 @crud_flights_bp.put("/flights/<string:flight_number_uuid>")
 @expects_json(update_flight_schema, check_formats=True)
 def update_flight(flight_number_uuid):
-    # TODO: Add BEARER TOKEN
+    # TODO:
+    #  - require admin jwt
 
     try:
         flight = db.session.query(Flights).get(flight_number_uuid)
