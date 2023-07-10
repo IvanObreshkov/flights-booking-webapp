@@ -10,6 +10,7 @@ from database import db
 from models.flights_model import Flights
 from models.user_bookings_model import UserBookings
 from models.users_model import Users
+from utils import admin_required
 
 crud_flights_bp = Blueprint("flights", __name__)
 
@@ -28,8 +29,8 @@ flights_schema = {
                          },
         'price': {'type': 'number'}
     },
-'required': ['start_destination', 'end_destination', 'takeoff_time', 'landing_time', 'price'],
-'additionalProperties': False
+    'required': ['start_destination', 'end_destination', 'takeoff_time', 'landing_time', 'price'],
+    'additionalProperties': False
 }
 
 update_flight_schema = {
@@ -47,10 +48,12 @@ update_flight_schema = {
                          },
         'price': {'type': 'number'}
     },
-'additionalProperties': False
+    'additionalProperties': False
 }
 
+
 @crud_flights_bp.post("/flights")
+@admin_required
 @expects_json(flights_schema, check_formats=True)
 def add_flight():
     try:
@@ -61,9 +64,10 @@ def add_flight():
         landing_time = json_data['landing_time']
         price = json_data['price']
 
-
-        existing_flight = db.session.query(Flights).filter_by(start_destination=start_destination, end_destination=end_destination,
-                                                              takeoff_time=takeoff_time, landing_time=landing_time).all()
+        existing_flight = db.session.query(Flights).filter_by(start_destination=start_destination,
+                                                              end_destination=end_destination,
+                                                              takeoff_time=takeoff_time,
+                                                              landing_time=landing_time).all()
         if not existing_flight:
             new_flight = Flights(
                 flight_number=str(uuid.uuid4().hex)[:6].upper(),
@@ -78,7 +82,7 @@ def add_flight():
 
             return {"Message": "New flight added to DB!"}
 
-        return {"Message":"Cannot add the certain flight! A flight with the same data already exist in the database!"}
+        return {"Message": "Cannot add the certain flight! A flight with the same data already exist in the database!"}
 
     except IntegrityError as e:
         db.session.rollback()
@@ -92,7 +96,9 @@ def add_flight():
     finally:
         db.session.close()
 
+
 @crud_flights_bp.get("/flights")
+@admin_required
 def get_flights():
     try:
         all_flights = db.session.query(Flights).all()
@@ -103,10 +109,10 @@ def get_flights():
         return {"Message": "Couldn't retrieve flights from DB!", "Error": str(e)}, 500
     finally:
         db.session.close()
-@crud_flights_bp.get("/flights/<flight_number>")
-def get_flight(flight_number):
-    # TODO: Add BEARER TOKEN
 
+@crud_flights_bp.get("/flights/<flight_number>")
+@admin_required
+def get_flight(flight_number):
     try:
         flight = db.session.query(Flights).get(flight_number)
         if flight:
@@ -120,10 +126,10 @@ def get_flight(flight_number):
     finally:
         db.session.close()
 
-@crud_flights_bp.get("/flights/<string:flight_number>/passengers")
-def get_flight_passengers(flight_number):
-    # TODO: Add Bearer Token
 
+@crud_flights_bp.get("/flights/<string:flight_number>/passengers")
+@admin_required
+def get_flight_passengers(flight_number):
     try:
         flight = db.session.query(Flights).get(flight_number)
         if flight:
@@ -150,10 +156,10 @@ def get_flight_passengers(flight_number):
     finally:
         db.session.close()
 
-@crud_flights_bp.delete("/flights/<string:flight_number_uuid>")
-def delete_user(flight_number_uuid):
-    # TODO: Add BEARER TOKEN
 
+@crud_flights_bp.delete("/flights/<string:flight_number_uuid>")
+@admin_required
+def delete_user(flight_number_uuid):
     try:
         user = db.session.query(Flights).get(flight_number_uuid)
         if user:
@@ -172,10 +178,9 @@ def delete_user(flight_number_uuid):
 
 
 @crud_flights_bp.put("/flights/<string:flight_number_uuid>")
+@admin_required
 @expects_json(update_flight_schema, check_formats=True)
 def update_flight(flight_number_uuid):
-    # TODO: Add BEARER TOKEN
-
     try:
         flight = db.session.query(Flights).get(flight_number_uuid)
         if flight:

@@ -28,21 +28,36 @@ schema = {
     'additionalProperties': False
 }
 
-
 @register_bp.post("/register")
 def register_user():
     try:
         data = request.form
-        print(data)
         first_name = data["first_name"]
         last_name = data["last_name"]
         email = data["email"]
         password = data["password"]
+
+        for key in data:
+            email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+
+            if data[key].strip() == '':
+                key_to_text_list = key.split('_')
+                key_to_text = ' '.join(key_to_text_list)
+                new_key = key_to_text.capitalize()
+                return render_template('register.html', msg=f'{new_key} cannot be empty!')
+
+            if key == 'email':
+                if not re.match(email_pattern, data[key]):
+                    key_to_text_list = key.split('_')
+                    key_to_text = ' '.join(key_to_text_list)
+                    new_key = key_to_text.capitalize()
+                    return render_template('register.html', msg=f'{new_key} is not in a valid format!')
+
         hashed_password = flask_bcrypt.generate_password_hash(password).decode(
             "utf-8")
 
+
         # TODO:
-        #  - Implement JWT
         #  - Send verification emails
 
         new_user = Users(
@@ -57,6 +72,9 @@ def register_user():
 
         return render_template('register.html', msg="New user added to DB!")
 
+
+
+
     except IntegrityError as e:
         db.session.rollback()
         pattern = r"\"(.*?)\""
@@ -67,6 +85,7 @@ def register_user():
         # Handle any other exceptions and errors
         raise InternalServerError(
             f'Registration failed! Please try again later!, Error: {str(e)}')
+
     finally:
         db.session.close()
 

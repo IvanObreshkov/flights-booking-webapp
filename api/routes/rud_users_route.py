@@ -7,6 +7,7 @@ from flask_expects_json import expects_json
 
 from database import db
 from models.users_model import Users
+from utils import admin_required
 
 rud_users_bp = Blueprint("crud_users", __name__)
 
@@ -23,9 +24,8 @@ schema = {
 
 
 @rud_users_bp.get("/users")
+@admin_required
 def get_users():
-    # TODO: Add BEARER TOKEN
-
     try:
         all_users = db.session.query(Users).all()
         users_list = [user.to_json() for user in all_users]
@@ -38,9 +38,8 @@ def get_users():
 
 
 @rud_users_bp.get("/users/<uuid:user_uuid>")
+@admin_required
 def get_user(user_uuid):
-    # TODO: Add BEARER TOKEN
-
     try:
         user = db.session.query(Users).get(user_uuid)
         if user:
@@ -56,9 +55,8 @@ def get_user(user_uuid):
 
 
 @rud_users_bp.delete("/users/<uuid:user_uuid>")
+@admin_required
 def delete_user(user_uuid):
-    # TODO: Add BEARER TOKEN
-
     try:
         user = db.session.query(Users).get(user_uuid)
         if user:
@@ -77,10 +75,9 @@ def delete_user(user_uuid):
 
 
 @rud_users_bp.put("/users/<uuid:user_uuid>")
+@admin_required
 @expects_json(schema, check_formats=True)
 def update_user(user_uuid):
-    # TODO: Add BEARER TOKEN
-
     try:
         user = db.session.query(Users).get(user_uuid)
         if user:

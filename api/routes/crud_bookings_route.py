@@ -9,6 +9,8 @@ from database import db
 from models.flights_model import Flights
 from models.user_bookings_model import UserBookings
 from models.users_model import Users
+from utils import admin_required, admin_or_user_id_required, \
+    require_admin_or_user_to_book_a_flight
 
 crud_bookings_bp = Blueprint("bookings", __name__)
 
@@ -23,6 +25,7 @@ bookings_schema = {
 }
 
 @crud_bookings_bp.post("/bookings")
+@require_admin_or_user_to_book_a_flight
 @expects_json(bookings_schema, check_formats=True)
 def add_booking():
     try:
@@ -35,8 +38,7 @@ def add_booking():
 
         if user and flight:
 
-            existing_booking = db.session.query(UserBookings).filter_by(user_id=user_id,
-                                                                        flight_number=flight_number).all()
+            existing_booking = db.session.query(UserBookings).filter_by(user_id=user_id, flight_number=flight_number).all()
             if not existing_booking:
                 new_booking = UserBookings(booking_id=uuid.uuid4(), user_id=user_id, flight_number=flight_number)
                 db.session.add(new_booking)
@@ -63,10 +65,10 @@ def add_booking():
     finally:
         db.session.close()
 
-@crud_bookings_bp.get("/bookings")
-def get_bookings():
-    # TODO: Add Bearer Token
 
+@crud_bookings_bp.get("/bookings")
+@admin_required
+def get_bookings():
     try:
         all_bookings = db.session.query(UserBookings). \
             join(UserBookings.users). \
@@ -86,9 +88,8 @@ def get_bookings():
         db.session.close()
 
 @crud_bookings_bp.get("/bookings/<uuid:user_id>")
+@admin_or_user_id_required
 def get_user_bookings(user_id):
-    # TODO: Add Bearer Token
-
     try:
         user = db.session.query(Users).get(user_id)
         if user:
@@ -100,7 +101,7 @@ def get_user_bookings(user_id):
                               Users.email,
                               Users.first_name,
                               Users.last_name). \
-                filter_by(user_id=user_id).all()
+                filter_by(user_id=str(user_id)).all()
 
             # When querying individual rows the row is a KeyedTuple which has an _asdict method
             bookings = [booking._asdict() for booking in all_user_bookings]
@@ -117,9 +118,8 @@ def get_user_bookings(user_id):
 
 
 @crud_bookings_bp.delete("/bookings/<uuid:booking_id>")
+@admin_required
 def delete_booking(booking_id):
-    # TODO: Add BEARER TOKEN
-
     try:
         booking = db.session.query(UserBookings).filter_by(booking_id=str(booking_id)).first()
         if booking:
