@@ -1,6 +1,6 @@
 import sqlalchemy
 from sqlalchemy.orm import relationship
-from database import db
+from api.database import db
 
 
 class Users(db.Model):
