@@ -7,7 +7,6 @@ from werkzeug.exceptions import InternalServerError
 
 from controllers.flights_controller import *
 from database import db
-from models.flights_model import Flights
 from services.jwt_required_decorators import admin_required
 
 crud_flights_bp = Blueprint("flights", __name__)
