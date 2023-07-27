@@ -22,12 +22,12 @@ def create_user(data):
         The created User object
     """
 
+    validate_data(data)
+
     first_name = data["first_name"]
     last_name = data["last_name"]
     email = data["email"]
     password = data["password"]
-
-    validate_data(data)
 
     hashed_password = flask_bcrypt.generate_password_hash(password).decode("utf-8")
 
@@ -74,6 +74,11 @@ def validate_data(data):
                 new_key = key_to_text.capitalize()
                 raise ValueError(f'{new_key} is not in a valid format!')
 
+def get_user_by_email(email):
+    """Retrieves the user from the db by primary key email."""
+
+    user = db.session.query(Users).filter_by(email=email).first()
+    return user
 
 def add_user_to_db(user):
     """Adds the created user object to the database"""
