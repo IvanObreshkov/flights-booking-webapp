@@ -9,7 +9,7 @@ from models.users_model import Users
 
 def create_user(data):
     """
-    Create a new user object with the provided data.
+    Creates a new user object with the provided data.
 
     Parameters:
         data (dict): A dictionary containing user data with the following keys:
@@ -18,9 +18,8 @@ def create_user(data):
                      - "email" (str).
                      - "password" (str).
 
-    Raises:
-        ValueError: If any of the required fields (first_name, last_name, email, password)
-                    are missing or empty, or if the email is not in a valid format.
+    :return:
+        The created User object
     """
 
     first_name = data["first_name"]
