@@ -18,7 +18,7 @@ def create_user(data):
                      - "email" (str).
                      - "password" (str).
 
-    :return:
+    Return:
         The created User object
     """
 
