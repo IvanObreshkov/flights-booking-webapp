@@ -8,6 +8,7 @@ from werkzeug.exceptions import InternalServerError
 from controllers.flights_controller import *
 from database import db
 from services.jwt_required_decorators import admin_required
+from utils import handle_integrity_error
 
 crud_flights_bp = Blueprint("flights", __name__)
 
@@ -63,10 +64,7 @@ def add_flight():
 
     except IntegrityError as e:
         db.session.rollback()
-        pattern = r"\"(.*?)\""
-        matches = re.findall(pattern, str(e))
-        if matches:
-            return {"Error": f"{matches[0]}"}, 409
+        handle_integrity_error(e)
     except Exception as e:
         # Handle any other exceptions and errors
         raise InternalServerError(f"Couldn't create a new flight. Please try again later!, Error: {str(e)}")
@@ -80,8 +78,9 @@ def get_flights():
     try:
         all_flights = get_all_flights()
         flights_list = [flight.to_json() for flight in all_flights]
-
-        return {"Flights": flights_list}, 200
+        if flights_list:
+            return {"Flights": flights_list}, 200
+        return {"Message": "The flights table is empty"}, 404
     except Exception as e:
         return {"Message": "Couldn't retrieve flights from DB!", "Error": str(e)}, 500
     finally:

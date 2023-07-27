@@ -10,6 +10,7 @@ from controllers.users_controller import get_user_by_uuid
 from database import db
 from services.jwt_required_decorators import admin_required, admin_or_user_id_required, \
     require_admin_or_user_to_book_a_flight
+from utils import handle_integrity_error
 
 crud_bookings_bp = Blueprint("bookings", __name__)
 
@@ -30,35 +31,45 @@ bookings_schema = {
 def add_booking():
     try:
         json_data = request.json
-        user_id = json_data['user_id']
-        flight_number = json_data["flight_number"]
 
-        user = get_user_by_uuid(user_id)
-        flight = get_flight_by_flight_number(flight_number)
+        user = get_user_by_uuid(json_data['user_id'])
+        flight = get_flight_by_flight_number(json_data["flight_number"])
 
-        if user and flight:
-            if check_booking_existence(json_data):
-                return {"Message": f"User with uuid {user_id} has already booked flight {flight_number}!"}, 409
-
-            add_new_booking(json_data)
-            return {"Message": "New booking added to DB!"}, 200
-
-        elif not user:
-            return {"Message": f"User with uuid {user_id} doesn't exist in the DB!"}, 404
-
-        elif not flight:
-            return {"Message": f"Flight with number: {flight_number} doesn't exist in the DB!"}, 404
+        return validate_and_add_booking(user, flight, json_data)
 
     except IntegrityError as e:
         db.session.rollback()
-        pattern = r"\"(.*?)\""
-        matches = re.findall(pattern, str(e))
-        if matches:
-            return {"Error": f"{matches[0]}"}, 409
+        return handle_integrity_error(e)
     except Exception as e:
         return {"Message": f"Couldn't create a new booking. Please try again later!", "Error": str(e)}, 500
     finally:
         db.session.close()
+
+
+def validate_and_add_booking(user, flight, json_data):
+    """Checks if user, flight and booking exist
+    Parameters:
+        flight: retrieved flight obj from the database
+        user: retrieved user obj from the database
+        json_data: body of the post request
+    Returns:
+        - 200 status code, if booking is created
+        - 409 status code if user has already booked that flight
+        - 404 status code if user or flight doesn't exist
+    """
+
+    if user and flight:
+        if check_booking_existence(json_data):
+            return {"Message": f"User with uuid {user.id} has already booked flight {flight.flight_number}!"}, 409
+
+        add_new_booking(json_data)
+        return {"Message": "New booking added to DB!"}, 200
+
+    elif not user:
+        return {"Message": f"User with uuid {user.id} doesn't exist in the DB!"}, 404
+
+    elif not flight:
+        return {"Message": f"Flight with number: {flight.flight_number} doesn't exist in the DB!"}, 404
 
 
 @crud_bookings_bp.get("/bookings")
@@ -72,7 +83,7 @@ def get_bookings():
             bookings = [booking._asdict() for booking in all_bookings]
             return {"All bookings": bookings}, 200
 
-        return {"Message": "The bookings database is empty"}, 404
+        return {"Message": "The bookings table is empty"}, 404
 
     except Exception as e:
         return {"Message": "Couldn't retrieve bookings from DB!", "Error": str(e)}, 500

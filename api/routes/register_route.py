@@ -11,6 +11,7 @@ from werkzeug.exceptions import InternalServerError
 
 from controllers.users_controller import create_user, add_user_to_db
 from database import db
+from utils import handle_integrity_error
 
 register_bp = Blueprint("register", __name__)
 
@@ -42,10 +43,7 @@ def register_user():
 
     except IntegrityError as e:
         db.session.rollback()
-        pattern = r"\"(.*?)\""
-        matches = re.findall(pattern, str(e))
-        if matches:
-            return render_template('register.html', msg=f"{matches[0]}"), 409
+        handle_integrity_error(e)
 
     except Exception as e:
         # Handle any other exceptions and errors

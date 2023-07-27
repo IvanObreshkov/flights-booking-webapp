@@ -29,8 +29,9 @@ def get_users():
     try:
         all_users = get_all_users()
         users_list = [user.to_json() for user in all_users]
-
-        return {"Users": users_list}, 200
+        if users_list:
+            return {"Users": users_list}, 200
+        return {"Message": "The users table is empty"}, 404
     except Exception as e:
         return {"Message": "Couldn't retrieve users from DB!", "Error": str(e)}, 500
     finally:
