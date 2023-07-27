@@ -36,6 +36,11 @@ def get_flight_by_flight_number(flight_number):
 
 
 def get_passengers_on_flight(flight_number):
+    """Retrieve all passengers (users) on a given flight
+    Returns:
+        list of users
+    """
+
     all_passengers = db.session.query(UserBookings). \
         join(UserBookings.users). \
         join(UserBookings.flights). \
@@ -84,7 +89,9 @@ def check_flight_existence(json_data):
         takeoff_time=json_data["takeoff_time"],
         landing_time=json_data['landing_time']).all()
 
-    if not existing_flight:
-        return False
+    if existing_flight:
+        return True
 
-    return True
+    return False
+
+
