@@ -5,9 +5,9 @@
 from flask import Blueprint, request
 from flask_expects_json import expects_json
 
+from controllers.users_controller import *
 from database import db
-from models.users_model import Users
-from utils import admin_required
+from services.jwt_required_decorators import admin_required
 
 rud_users_bp = Blueprint("crud_users", __name__)
 
@@ -27,7 +27,7 @@ schema = {
 @admin_required
 def get_users():
     try:
-        all_users = db.session.query(Users).all()
+        all_users = get_all_users()
         users_list = [user.to_json() for user in all_users]
 
         return {"Users": users_list}, 200
@@ -36,12 +36,11 @@ def get_users():
     finally:
         db.session.close()
 
-
 @rud_users_bp.get("/users/<uuid:user_uuid>")
 @admin_required
 def get_user(user_uuid):
     try:
-        user = db.session.query(Users).get(user_uuid)
+        user = get_user_by_uuid(user_uuid)
         if user:
             return {"User": user.to_json()}, 200
 
@@ -58,10 +57,9 @@ def get_user(user_uuid):
 @admin_required
 def delete_user(user_uuid):
     try:
-        user = db.session.query(Users).get(user_uuid)
+        user = get_user_by_uuid(user_uuid)
         if user:
-            db.session.delete(user)
-            db.session.commit()
+            delete_user_from_db(user)
             return {"Message": f"User with uuid {user_uuid} was removed successfully from the DB"}, 200
 
         return {"Message": f"User with uuid {user_uuid} doesn't exist in the DB!"}, 404
@@ -79,14 +77,11 @@ def delete_user(user_uuid):
 @expects_json(schema, check_formats=True)
 def update_user(user_uuid):
     try:
-        user = db.session.query(Users).get(user_uuid)
+        user = get_user_by_uuid(user_uuid)
         if user:
             json_data = request.json
-            user.first_name = json_data.get('first_name', user.first_name)
-            user.last_name = json_data.get('last_name', user.last_name)
-            user.email = json_data.get('email', user.email)
-            user.password = json_data.get('password', user.password)
-            db.session.commit()
+            edit_user_data(user, json_data)
+
             return {"Message": f"User with uuid {user_uuid} was updated successfully."}, 200
 
         return {"Message": f"User with uuid {user_uuid} doesn't exist in the DB!"}, 404

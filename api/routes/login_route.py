@@ -1,14 +1,10 @@
-import datetime
-import os
-import re
-
-import flask_bcrypt
-import jwt
+from flask_bcrypt import check_password_hash
 from dotenv import load_dotenv
 from flask import Blueprint, request, render_template, make_response
+from werkzeug.exceptions import InternalServerError
 
-from database import db
-from models.users_model import Users
+from controllers.users_controller import validate_data, get_user_by_email
+from services.jwt_creation import create_jwt
 
 login_bp = Blueprint("login", __name__)
 load_dotenv()
@@ -23,64 +19,34 @@ login_schema = {
     'additionalProperties': False
 }
 
-
 @login_bp.post("/login")
 def login_users():
-    email = request.form["email"]
-    raw_password = request.form["password"]
+    try:
+        data = request.form
+        validate_data(data)
 
-    for key in request.form:
-        email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+        email = data["email"]
+        raw_password = data["password"]
 
-        if request.form[key].strip() == '':
-            key_to_text_list = key.split('_')
-            key_to_text = ' '.join(key_to_text_list)
-            new_key = key_to_text.capitalize()
-            return render_template('login.html', msg=f'{new_key} cannot be empty!')
+        user = get_user_by_email(email)
+        if user:
+            hashed_user_password = user.password
 
-        if key == 'email':
-            if not re.match(email_pattern, request.form[key]):
-                key_to_text_list = key.split('_')
-                key_to_text = ' '.join(key_to_text_list)
-                new_key = key_to_text.capitalize()
-                return render_template('login.html', msg=f'{new_key} is not in a valid format!')
+            if check_password_hash(hashed_user_password, raw_password):
 
-    user = db.session.query(Users).filter_by(email=email).first()
-    if user:
-        hashed_user_password = user.password
+                token = create_jwt(user, raw_password)
+                resp = make_response(render_template('login.html', msg=str(token)))
+                resp.set_cookie("token", token, httponly=True, secure=True, samesite="Strict")
+                return resp
 
-        if flask_bcrypt.check_password_hash(hashed_user_password,
-                                            raw_password):
-            if os.getenv("ADMIN_EMAIL") == user.email and os.getenv(
-                    "ADMIN_PASSWORD") == raw_password:
-                # TODO:
-                #   - Add refresh token logic
+            return render_template('login.html', msg="Invalid password!"), 401
 
-                # FIXME:
-                #   - Change exp time to what in the industry standard for access_tokens
+        return render_template('login.html', msg="User doesn't exist in the DB"), 404
 
-                payload = {"sub": user.id,
-                           "name": f"{user.first_name} {user.last_name}",
-                           "email": user.email, "admin": False,
-                           "exp": datetime.datetime.utcnow() + datetime.timedelta(
-                               hours=1)}
-
-            else:
-                payload = {"sub": user.id,
-                           "name": f"{user.first_name} {user.last_name}",
-                           "email": user.email, "admin": False,
-                           "exp": datetime.datetime.utcnow() + datetime.timedelta(
-                               hours=1)}
-
-            token = jwt.encode(payload, os.getenv("SECRET_KEY"), algorithm="HS256")
-            resp = make_response(render_template('login.html', msg=str(token)))
-            resp.set_cookie("token", token, httponly=True, secure=True, samesite="Strict")
-            return resp
-
-        return render_template('login.html', msg="Invalid password!"), 401
-
-    return render_template('login.html', msg="User doesn't exist in the DB"), 404
-
+    except ValueError as e:
+        return render_template('login.html', msg=str(e)), 400
+    except Exception as e:
+        raise InternalServerError(f'Login failed! Please try again later!, Error: {str(e)}')
 
 @login_bp.get("/login")
 def get_login_form():
