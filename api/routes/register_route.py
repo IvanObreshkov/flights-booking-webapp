@@ -34,7 +34,7 @@ def register_user():
         new_user = create_user(data)
         add_user_to_db(new_user)
 
-        return render_template('register.html', msg="New user added to DB!")
+        return render_template('register.html', msg="New user added to DB!"), 200
 
     except ValueError as e:
         # Handle validation errors.
