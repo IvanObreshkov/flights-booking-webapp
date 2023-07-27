@@ -7,7 +7,7 @@ from flask_expects_json import expects_json
 
 from database import db
 from models.users_model import Users
-from utils import admin_required
+from services.jwt_required_decorators import admin_required
 
 rud_users_bp = Blueprint("crud_users", __name__)
 

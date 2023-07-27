@@ -9,7 +9,7 @@ from database import db
 from models.flights_model import Flights
 from models.user_bookings_model import UserBookings
 from models.users_model import Users
-from utils import admin_required, admin_or_user_id_required, \
+from services.jwt_required_decorators import admin_required, admin_or_user_id_required, \
     require_admin_or_user_to_book_a_flight
 
 crud_bookings_bp = Blueprint("bookings", __name__)

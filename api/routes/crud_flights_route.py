@@ -10,7 +10,7 @@ from database import db
 from models.flights_model import Flights
 from models.user_bookings_model import UserBookings
 from models.users_model import Users
-from utils import admin_required
+from services.jwt_required_decorators import admin_required
 
 crud_flights_bp = Blueprint("flights", __name__)
 
