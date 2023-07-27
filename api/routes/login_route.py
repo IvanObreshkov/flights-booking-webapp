@@ -21,8 +21,6 @@ login_schema = {
 
 @login_bp.post("/login")
 def login_users():
-    """Endpoint handling loging of users"""
-
     try:
         data = request.form
         validate_data(data)

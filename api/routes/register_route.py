@@ -29,8 +29,6 @@ schema = {
 
 @register_bp.post("/register")
 def register_user():
-    """Endpoint handling registration of new users"""
-
     try:
         data = request.form
         new_user = create_user(data)
