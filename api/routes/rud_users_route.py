@@ -5,7 +5,7 @@
 from flask import Blueprint, request
 from flask_expects_json import expects_json
 
-from controllers.users_controller import get_all_users, get_user_by_uuid, delete_user_from_db, edit_user_data
+from controllers.users_controller import *
 from database import db
 from services.jwt_required_decorators import admin_required
 
