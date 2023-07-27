@@ -3,9 +3,7 @@
 # https://flask.palletsprojects.com/en/2.3.x/tutorial/views/
 
 import re
-import uuid
 
-import flask_bcrypt
 from flask import Blueprint, render_template
 from flask import request
 from sqlalchemy.exc import IntegrityError
@@ -13,7 +11,6 @@ from werkzeug.exceptions import InternalServerError
 
 from controllers.users_controller import create_user, add_user_to_db
 from database import db
-from models.users_model import Users
 
 register_bp = Blueprint("register", __name__)
 
@@ -32,6 +29,8 @@ schema = {
 
 @register_bp.post("/register")
 def register_user():
+    """Endpoint handling registration of new users"""
+
     try:
         data = request.form
         new_user = create_user(data)
