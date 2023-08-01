@@ -1,14 +1,12 @@
-import re
-
 from flask import Blueprint, request
 from flask_expects_json import expects_json
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import InternalServerError
 
-from controllers.flights_controller import *
-from database import db
-from services.jwt_required_decorators import admin_required
-from utils import handle_integrity_error
+from api.controllers.flights_controller import *
+from api.database import db
+from api.services.jwt_required_decorators import admin_required
+from api.utils import handle_integrity_error
 
 crud_flights_bp = Blueprint("flights", __name__)
 

@@ -2,16 +2,14 @@
 # learn more about it in the docs: https://flask.palletsprojects.com/en/2.3.x/blueprints/,
 # https://flask.palletsprojects.com/en/2.3.x/tutorial/views/
 
-import re
-
 from flask import Blueprint, render_template
 from flask import request
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import InternalServerError
 
-from controllers.users_controller import create_user, add_user_to_db
-from database import db
-from utils import handle_integrity_error
+from api.controllers.users_controller import create_user, add_user_to_db
+from api.database import db
+from api.utils import handle_integrity_error
 
 register_bp = Blueprint("register", __name__)
 

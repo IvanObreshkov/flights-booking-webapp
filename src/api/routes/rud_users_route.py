@@ -5,9 +5,9 @@
 from flask import Blueprint, request
 from flask_expects_json import expects_json
 
-from controllers.users_controller import *
-from database import db
-from services.jwt_required_decorators import admin_required
+from api.controllers.users_controller import *
+from api.database import db
+from api.services.jwt_required_decorators import admin_required
 
 rud_users_bp = Blueprint("crud_users", __name__)
 

@@ -3,8 +3,8 @@ from dotenv import load_dotenv
 from flask import Blueprint, request, render_template, make_response
 from werkzeug.exceptions import InternalServerError
 
-from controllers.users_controller import validate_data, get_user_by_email
-from services.jwt_creation import create_jwt
+from api.controllers.users_controller import validate_data, get_user_by_email
+from api.services.jwt_creation import create_jwt
 
 login_bp = Blueprint("login", __name__)
 load_dotenv()

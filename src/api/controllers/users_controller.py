@@ -3,8 +3,8 @@ import uuid
 
 import flask_bcrypt
 
-from database import db
-from models.users_model import Users
+from api.database import db
+from api.models.users_model import Users
 
 
 def create_user(data):
