@@ -25,6 +25,7 @@ PyJWT==2.7.0
 PyMySQL==1.0.3
 pyrsistent==0.19.3
 pytest==7.4.0
+pytest-mock==3.11.1
 python-dotenv==1.0.0
 SQLAlchemy==2.0.15
 SQLAlchemy-Utils==0.41.1
