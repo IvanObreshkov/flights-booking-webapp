@@ -106,7 +106,7 @@ def get_booking(booking_id):
         db.session.close()
 
 
-@crud_bookings_bp.get("users/<uuid:user_id>/bookings")
+@crud_bookings_bp.get("/users/<uuid:user_id>/bookings")
 @admin_or_user_id_required
 def get_user_bookings(user_id):
     try:
