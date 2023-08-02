@@ -57,7 +57,8 @@ def add_flight():
         if check_flight_existence(json_data):
             return {"Message": "Cannot add the certain flight! "
                                "A flight with the same data already exist in the database!"}
-        create_flight(json_data)
+        new_flight = create_flight(json_data)
+        add_flight_to_db(new_flight)
         return {"Message": "New flight added to DB!"}
 
     except IntegrityError as e:

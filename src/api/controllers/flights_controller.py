@@ -7,15 +7,20 @@ from api.models.users_model import Users
 
 
 def create_flight(json_data):
-    """Creates a new flight with the data from the request body and adds it to the database"""
+    """Creates a new flight with the data from the request body"""
 
-    new_flight = Flights(flight_number=str(uuid.uuid4().hex)[:6].upper(),
+    flight = Flights(flight_number=str(uuid.uuid4().hex)[:6].upper(),
                          start_destination=json_data["start_destination"],
                          end_destination=json_data["end_destination"],
                          takeoff_time=json_data["takeoff_time"],
                          landing_time=json_data['landing_time'],
                          price=json_data["price"])
-    db.session.add(new_flight)
+    return flight
+
+def add_flight_to_db(flight):
+    """Add the new flight to the DB"""
+
+    db.session.add(flight)
     db.session.commit()
 
 
