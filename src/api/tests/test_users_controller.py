@@ -65,6 +65,8 @@ def test_get_all_users(mocker):
     assert result[1].last_name == 'Montana'
     assert result[1].email == 'toni@toni.bg'
     assert result[1].password == "birabira"
+
+
 def test_get_user_by_uuid(mocker):
     mock_user = create_mock_user("1", "Ivan", "Obreshkov", "ivan@test.com", "test1234")
     mock_query = mocker.patch("api.database.db.session.query")
@@ -76,6 +78,7 @@ def test_get_user_by_uuid(mocker):
     mock_query.return_value.get.return_value = None
     result = get_user_by_uuid("invalid_uuid")
     assert result is None
+
 
 def test_get_user_by_email(mocker):
     mock_user = create_mock_user("1", "Ivan", "Obreshkov", "ivan@test.com", "test1234")
@@ -89,6 +92,7 @@ def test_get_user_by_email(mocker):
     mock_query.return_value.filter_by.return_value.first.return_value = None
     result = get_user_by_email("invalid_email")
     assert result is None
+
 
 def test_add_user_to_db(mocker):
     mock_user = create_mock_user("1", "Ivan", "Obreshkov", "ivan@test.com", "test1234")
@@ -113,13 +117,14 @@ def test_delete_user_to_db(mocker):
     mock_add.assert_called_once_with(mock_user)
     mock_commit.assert_called_once()
 
+
 def test_edit_user_data(mocker):
     mock_user = create_mock_user("1", "Ivan", "Obreshkov", "ivan@test.com", "test1234")
 
     mock_edin_json_data = {'first_name': 'Toni', 'email': 'toni@example.com'}
     mock_commit = mocker.patch('api.database.db.session.commit')
 
-    edit_user_data(mock_user,mock_edin_json_data)
+    edit_user_data(mock_user, mock_edin_json_data)
 
     assert mock_user.first_name == "Toni"
     assert mock_user.last_name == "Obreshkov"
