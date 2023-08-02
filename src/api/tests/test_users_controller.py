@@ -1,6 +1,6 @@
 import pytest
 
-from api.controllers.users_controller import validate_data, get_all_users, get_user_by_uuid, get_user_by_email
+from api.controllers.users_controller import *
 from api.models.users_model import Users
 from api.models.flights_model import Flights
 from api.models.user_bookings_model import UserBookings
@@ -58,12 +58,13 @@ def test_get_all_users(mocker):
     assert result[0].first_name == 'Ivan'
     assert result[0].last_name == 'Obreshkov'
     assert result[0].email == 'ivan@test.com'
+    assert result[0].password == "test1234"
 
     assert result[1].id == '2'
     assert result[1].first_name == 'Toni'
     assert result[1].last_name == 'Montana'
     assert result[1].email == 'toni@toni.bg'
-
+    assert result[1].password == "birabira"
 def test_get_user_by_uuid(mocker):
     mock_user = create_mock_user("1", "Ivan", "Obreshkov", "ivan@test.com", "test1234")
     mock_query = mocker.patch("api.database.db.session.query")
@@ -88,3 +89,41 @@ def test_get_user_by_email(mocker):
     mock_query.return_value.filter_by.return_value.first.return_value = None
     result = get_user_by_email("invalid_email")
     assert result is None
+
+def test_add_user_to_db(mocker):
+    mock_user = create_mock_user("1", "Ivan", "Obreshkov", "ivan@test.com", "test1234")
+
+    mock_add = mocker.patch('api.database.db.session.add')
+    mock_commit = mocker.patch('api.database.db.session.commit')
+
+    add_user_to_db(mock_user)
+
+    mock_add.assert_called_once_with(mock_user)
+    mock_commit.assert_called_once()
+
+
+def test_delete_user_to_db(mocker):
+    mock_user = create_mock_user("1", "Ivan", "Obreshkov", "ivan@test.com", "test1234")
+
+    mock_add = mocker.patch('api.database.db.session.delete')
+    mock_commit = mocker.patch('api.database.db.session.commit')
+
+    delete_user_from_db(mock_user)
+
+    mock_add.assert_called_once_with(mock_user)
+    mock_commit.assert_called_once()
+
+def test_edit_user_data(mocker):
+    mock_user = create_mock_user("1", "Ivan", "Obreshkov", "ivan@test.com", "test1234")
+
+    mock_edin_json_data = {'first_name': 'Toni', 'email': 'toni@example.com'}
+    mock_commit = mocker.patch('api.database.db.session.commit')
+
+    edit_user_data(mock_user,mock_edin_json_data)
+
+    assert mock_user.first_name == "Toni"
+    assert mock_user.last_name == "Obreshkov"
+    assert mock_user.email == "toni@example.com"
+    assert mock_user.password == "test1234"
+
+    mock_commit.assert_called_once()
