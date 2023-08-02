@@ -1,6 +1,6 @@
 import pytest
 
-from api.controllers.users_controller import validate_data, get_all_users, get_user_by_uuid
+from api.controllers.users_controller import validate_data, get_all_users, get_user_by_uuid, get_user_by_email
 from api.models.users_model import Users
 from api.models.flights_model import Flights
 from api.models.user_bookings_model import UserBookings
@@ -74,4 +74,17 @@ def test_get_user_by_uuid(mocker):
 
     mock_query.return_value.get.return_value = None
     result = get_user_by_uuid("invalid_uuid")
+    assert result is None
+
+def test_get_user_by_email(mocker):
+    mock_user = create_mock_user("1", "Ivan", "Obreshkov", "ivan@test.com", "test1234")
+    mock_query = mocker.patch("api.database.db.session.query")
+
+    mock_query.return_value.filter_by.return_value.first.return_value = mock_user
+
+    result = get_user_by_email("ivan@test.com")
+    assert result == mock_user
+
+    mock_query.return_value.filter_by.return_value.first.return_value = None
+    result = get_user_by_email("invalid_email")
     assert result is None
