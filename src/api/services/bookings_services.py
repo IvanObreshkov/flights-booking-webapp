@@ -1,39 +1,20 @@
-import re
-
-from flask import Blueprint, request
-from flask_expects_json import expects_json
 from sqlalchemy.exc import IntegrityError
 
-from controllers.bookings_controller import *
-from controllers.flights_controller import get_flight_by_flight_number
-from controllers.users_controller import get_user_by_uuid
-from database import db
-from services.jwt_required_decorators import admin_required, admin_or_user_id_required, \
-    require_admin_or_user_to_book_a_flight
-from utils import handle_integrity_error
-
-crud_bookings_bp = Blueprint("bookings", __name__)
-
-bookings_schema = {
-    'type': 'object',
-    'properties': {
-        'flight_number': {'type': 'string'},
-        'user_id': {'type': 'string'},
-    },
-    'required': ['flight_number', 'user_id'],
-    'additionalProperties': False
-}
+from api.services.flights_services import query_flight_by_flight_number
+from api.services.users_services import get_user_by_uuid_service
+from api.utils import handle_integrity_error
+from api.db.repositories.user_bookings_repository import *
 
 
-@crud_bookings_bp.post("/bookings")
-@require_admin_or_user_to_book_a_flight
-@expects_json(bookings_schema, check_formats=True)
-def add_booking():
+def add_booking_service(request):
+    """Returns JSON formatted response containing a success message if the new booking was added to the DB
+     or an error message along with corresponding status codes"""
+
     try:
         json_data = request.json
 
-        user = get_user_by_uuid(json_data['user_id'])
-        flight = get_flight_by_flight_number(json_data["flight_number"])
+        user = get_user_by_uuid_service(json_data['user_id'])
+        flight = query_flight_by_flight_number(json_data["flight_number"])
 
         return validate_and_add_booking(user, flight, json_data)
 
@@ -46,9 +27,17 @@ def add_booking():
         db.session.close()
 
 
+def create_booking(json_data):
+    """Creates a new booking with the data from the request body"""
+
+    new_booking = UserBookings(booking_id=uuid.uuid4(), user_id=json_data["user_id"],
+                               flight_number=json_data["flight_number"])
+    return new_booking
+
+
 def validate_and_add_booking(user, flight, json_data):
     """Checks if user, flight and booking exist
-    Parameters:
+    Args:
         flight: retrieved flight obj from the database
         user: retrieved user obj from the database
         json_data: body of the post request
@@ -62,7 +51,8 @@ def validate_and_add_booking(user, flight, json_data):
         if check_booking_existence(json_data):
             return {"Message": f"User with uuid {user.id} has already booked flight {flight.flight_number}!"}, 409
 
-        add_new_booking(json_data)
+        new_booking = create_booking(json_data)
+        add_booking_to_db(new_booking)
         return {"Message": "New booking added to DB!"}, 200
 
     elif not user:
@@ -72,9 +62,10 @@ def validate_and_add_booking(user, flight, json_data):
         return {"Message": f"Flight with number: {flight.flight_number} doesn't exist in the DB!"}, 404
 
 
-@crud_bookings_bp.get("/bookings")
-@admin_required
-def get_bookings():
+def get_bookings_service():
+    """Returns JSON formatted response containing bookings data or an error message along with
+    corresponding status codes"""
+
     try:
         all_bookings = get_all_bookings()
 
@@ -91,30 +82,29 @@ def get_bookings():
         db.session.close()
 
 
-@crud_bookings_bp.get("/bookings/<uuid:booking_id>")
-@admin_or_user_id_required
-def get_booking(booking_id):
+def get_booking_service(booking_id):
+    """Returns JSON formatted response containing booking data or an error message along with
+    corresponding status codes"""
+
     try:
         booking = get_booking_by_id(booking_id)
         if booking:
             return {"Booking": booking.to_json()}, 200
 
         return {"Message": f"Booking with uuid {booking_id} doesn't exist in the DB!"}, 404
-
     except Exception as e:
         return {"Message": f"Couldn't retrieve Booking with uuid {booking_id} from DB!", "Error": str(e)}, 500
-
     finally:
         db.session.close()
 
 
-@crud_bookings_bp.get("users/<uuid:user_id>/bookings")
-@admin_or_user_id_required
-def get_user_bookings(user_id):
-    try:
-        user = get_user_by_uuid(user_id)
-        if user:
+def get_user_bookings_service(user_id):
+    """Returns JSON formatted response containing the bookings of a given user or an error message along with
+    corresponding status codes"""
 
+    try:
+        user = get_user_by_uuid_service(user_id)
+        if user:
             all_user_bookings = get_bookings_by_user_id(user_id)
             if all_user_bookings:
                 # When querying individual rows the row is a KeyedTuple which has an _asdict method
@@ -124,17 +114,16 @@ def get_user_bookings(user_id):
             return {"Message": f"User with uuid {user_id} has not booked any flights!"}, 404
 
         return {"Message": f"User with uuid {user_id} doesn't exist in the DB!"}, 404
-
     except Exception as e:
         return {"Message": "Couldn't retrieve user's bookings from DB!", "Error": str(e)}, 500
-
     finally:
         db.session.close()
 
 
-@crud_bookings_bp.delete("/bookings/<uuid:booking_id>")
-@admin_required
-def delete_booking(booking_id):
+def delete_booking_service(booking_id):
+    """Returns JSON formatted response containing a success message if the booking was deleted from the DB
+     or an error message along with corresponding status codes"""
+
     try:
         booking = get_booking_by_id(booking_id)
         if booking:
@@ -146,6 +135,5 @@ def delete_booking(booking_id):
     except Exception as e:
         db.session.rollback()
         return {"Message": f"Couldn't delete booking with uuid {booking_id} from DB!", "Error": str(e)}, 500
-
     finally:
         db.session.close()

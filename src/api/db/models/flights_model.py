@@ -1,7 +1,7 @@
 import sqlalchemy
 from sqlalchemy.orm import relationship
 
-from database import db
+from api.db.database import db
 
 
 class Flights(db.Model):

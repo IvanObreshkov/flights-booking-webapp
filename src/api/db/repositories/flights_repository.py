@@ -1,25 +1,10 @@
-import uuid
-
-from database import db
-from models.flights_model import Flights
-from models.user_bookings_model import UserBookings
-from models.users_model import Users
+from api.db.database import db
+from api.db.models.flights_model import Flights
+from api.db.models.user_bookings_model import UserBookings
+from api.db.models.users_model import Users
 
 
-def create_flight(json_data):
-    """Creates a new flight with the data from the request body and adds it to the database"""
-
-    new_flight = Flights(flight_number=str(uuid.uuid4().hex)[:6].upper(),
-                         start_destination=json_data["start_destination"],
-                         end_destination=json_data["end_destination"],
-                         takeoff_time=json_data["takeoff_time"],
-                         landing_time=json_data['landing_time'],
-                         price=json_data["price"])
-    db.session.add(new_flight)
-    db.session.commit()
-
-
-def get_all_flights():
+def query_all_flights():
     """Retrieve all flights from the database
     Returns:
             list of all flights
@@ -28,14 +13,14 @@ def get_all_flights():
     return all_flights
 
 
-def get_flight_by_flight_number(flight_number):
+def query_flight_by_flight_number(flight_number):
     """Retrieves a flight from the database by flight_number (uuid)"""
 
     flight = db.session.query(Flights).get(flight_number)
     return flight
 
 
-def get_passengers_on_flight(flight_number):
+def query_passengers_on_flight(flight_number):
     """Retrieve all passengers (users) on a given flight
     Returns:
         list of users
@@ -53,17 +38,17 @@ def get_passengers_on_flight(flight_number):
     return all_passengers
 
 
-def delete_flight_from_db(flight):
-    """Deletes a flight from the database"""
+def add_flight_to_db(flight):
+    """Adds the new flight to the DB"""
 
-    db.session.delete(flight)
+    db.session.add(flight)
     db.session.commit()
 
 
 def edit_flight_data(flight, json_data):
     """Updates the user with the provided data in the body of the request
 
-    Parameters:
+    Args:
         flight: The Flight obj
         json_data: The body of the PUT request
     """
@@ -95,3 +80,8 @@ def check_flight_existence(json_data):
     return False
 
 
+def delete_flight_from_db(flight):
+    """Deletes a flight from the database"""
+
+    db.session.delete(flight)
+    db.session.commit()

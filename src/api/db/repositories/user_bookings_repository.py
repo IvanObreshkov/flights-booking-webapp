@@ -1,18 +1,9 @@
 import uuid
 
-from database import db
-from models.flights_model import Flights
-from models.user_bookings_model import UserBookings
-from models.users_model import Users
-
-
-def add_new_booking(json_data):
-    """Creates a new booking with the data from the request body and adds it to the database """
-
-    new_booking = UserBookings(booking_id=uuid.uuid4(), user_id=json_data["user_id"],
-                               flight_number=json_data["flight_number"])
-    db.session.add(new_booking)
-    db.session.commit()
+from api.db.database import db
+from api.db.models.flights_model import Flights
+from api.db.models.user_bookings_model import UserBookings
+from api.db.models.users_model import Users
 
 
 def get_all_bookings():
@@ -62,13 +53,6 @@ def get_bookings_by_user_id(user_id):
     return all_user_bookings
 
 
-def remove_booking(booking):
-    """Deletes a booking from the database"""
-
-    db.session.delete(booking)
-    db.session.commit()
-
-
 def check_booking_existence(json_data):
     """Checks if a user has already booked a given flight
     Returns:
@@ -82,3 +66,17 @@ def check_booking_existence(json_data):
         return True
 
     return False
+
+
+def remove_booking(booking):
+    """Deletes a booking from the database"""
+
+    db.session.delete(booking)
+    db.session.commit()
+
+
+def add_booking_to_db(new_booking):
+    """Creates a new booking with the data from the request body and adds it to the database """
+
+    db.session.add(new_booking)
+    db.session.commit()
