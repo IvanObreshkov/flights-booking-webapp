@@ -76,7 +76,23 @@ def validate_data(data):
                 raise ValueError(f'{new_key} is not in a valid format!')
 
 
-def get_all_users():
+def get_users_service():
+    """Returns JSON formatted response containing users data or an error message along with
+    corresponding status codes"""
+
+    try:
+        all_users = query_all_users()
+        users_list = [user.to_json() for user in all_users]
+        if users_list:
+            return {"Users": users_list}, 200
+        return {"Message": "The users table is empty"}, 404
+    except Exception as e:
+        return {"Message": "Couldn't retrieve users from DB!", "Error": str(e)}, 500
+    finally:
+        db.session.close()
+
+
+def query_all_users():
     """Retrieves all users from the db.
     Returns:
          list of all users
@@ -86,7 +102,7 @@ def get_all_users():
     return all_users
 
 
-def get_user_by_uuid(user_uuid):
+def query_user_by_uuid(user_uuid):
     """Retrieves the user from the db by UUID.
 
     Returns:
@@ -97,7 +113,7 @@ def get_user_by_uuid(user_uuid):
     return user
 
 
-def get_user_by_email(email):
+def query_user_by_email(email):
     """Retrieves the user from the db by email.
 
     Returns:

@@ -12,25 +12,18 @@ from json_schemas import update_users_schema
 
 rud_users_bp = Blueprint("crud_users", __name__)
 
+
 @rud_users_bp.get("/users")
 @admin_required
-def get_users():
-    try:
-        all_users = get_all_users()
-        users_list = [user.to_json() for user in all_users]
-        if users_list:
-            return {"Users": users_list}, 200
-        return {"Message": "The users table is empty"}, 404
-    except Exception as e:
-        return {"Message": "Couldn't retrieve users from DB!", "Error": str(e)}, 500
-    finally:
-        db.session.close()
+def get_users_route():
+    get_users_service()
+
 
 @rud_users_bp.get("/users/<uuid:user_uuid>")
 @admin_required
 def get_user(user_uuid):
     try:
-        user = get_user_by_uuid(user_uuid)
+        user = query_user_by_uuid(user_uuid)
         if user:
             return {"User": user.to_json()}, 200
 
@@ -47,7 +40,7 @@ def get_user(user_uuid):
 @admin_required
 def delete_user(user_uuid):
     try:
-        user = get_user_by_uuid(user_uuid)
+        user = query_user_by_uuid(user_uuid)
         if user:
             delete_user_from_db(user)
             return {"Message": f"User with uuid {user_uuid} was removed successfully from the DB"}, 200
@@ -67,7 +60,7 @@ def delete_user(user_uuid):
 @expects_json(update_users_schema, check_formats=True)
 def update_user(user_uuid):
     try:
-        user = get_user_by_uuid(user_uuid)
+        user = query_user_by_uuid(user_uuid)
         if user:
             json_data = request.json
             edit_user_data(user, json_data)
