@@ -31,10 +31,10 @@ def get_booking_route(booking_id):
 @crud_bookings_bp.get("/users/<uuid:user_id>/bookings")
 # @admin_or_user_id_required
 def get_user_bookings_route(user_id):
-    get_user_bookings_service(user_id)
+    return get_user_bookings_service(user_id)
 
 
 @crud_bookings_bp.delete("/bookings/<uuid:booking_id>")
 @admin_required
 def delete_booking_route(booking_id):
-    delete_booking_service(booking_id)
+    return delete_booking_service(booking_id)
