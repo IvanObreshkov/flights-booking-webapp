@@ -9,15 +9,6 @@ from api.services.jwt_creation import create_jwt
 login_bp = Blueprint("login", __name__)
 load_dotenv()
 
-login_schema = {
-    'type': 'object',
-    'properties': {
-        'email': {'type': 'string', 'format': 'email'},
-        'password': {'type': 'string'}
-    },
-    'required': ['email', 'password'],
-    'additionalProperties': False
-}
 
 @login_bp.post("/login")
 def login_users():

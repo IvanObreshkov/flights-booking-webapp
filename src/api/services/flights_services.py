@@ -1,10 +1,33 @@
-import json
 import uuid
+
+import flask
+from sqlalchemy.exc import IntegrityError
 
 from api.database import db
 from api.models.flights_model import Flights
 from api.models.user_bookings_model import UserBookings
 from api.models.users_model import Users
+from api.utils import handle_integrity_error
+
+
+def add_flight_service(request: flask.request):
+    try:
+        json_data = request.json
+        if check_flight_existence(json_data):
+            return {"Message": "Cannot add the certain flight! "
+                               "A flight with the same data already exist in the database!"}
+        new_flight = create_flight(json_data)
+        add_flight_to_db(new_flight)
+        return {"Message": "New flight added to DB!"}
+
+    except IntegrityError as e:
+        db.session.rollback()
+        handle_integrity_error(e)
+    except Exception as e:
+        # Handle any other exceptions and errors
+        return {"Message": f"Couldn't create a new flight. Please try again later!, Error: {str(e)}"}, 500
+    finally:
+        db.session.close()
 
 
 def create_flight(json_data):

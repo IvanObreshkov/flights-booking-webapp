@@ -13,18 +13,6 @@ from api.utils import handle_integrity_error
 
 register_bp = Blueprint("register", __name__)
 
-schema = {
-    'type': 'object',
-    'properties': {
-        'first_name': {'type': 'string'},
-        'last_name': {'type': 'string'},
-        'email': {'type': 'string', 'format': 'email'},
-        'password': {'type': 'string'}
-    },
-    'required': ['first_name', 'last_name', 'email', 'password'],
-    'additionalProperties': False
-}
-
 
 @register_bp.post("/register")
 def register_user():
