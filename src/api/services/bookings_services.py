@@ -2,10 +2,10 @@ import uuid
 
 from sqlalchemy.exc import IntegrityError
 
-from api.database import db
-from api.models.flights_model import Flights
-from api.models.user_bookings_model import UserBookings
-from api.models.users_model import Users
+from db.database import db
+from db.models.flights_model import Flights
+from db.models.user_bookings_model import UserBookings
+from db.models.users_model import Users
 from api.services.flights_services import query_flight_by_flight_number
 from api.services.users_services import get_user_service
 from api.utils import handle_integrity_error

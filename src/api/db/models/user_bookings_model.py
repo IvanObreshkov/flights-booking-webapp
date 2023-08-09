@@ -2,7 +2,7 @@ import sqlalchemy
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
 
-from api.database import db
+from api.db.database import db
 
 
 class UserBookings(db.Model):

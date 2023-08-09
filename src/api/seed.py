@@ -7,9 +7,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import database_exists, create_database
 
-from models.flights_model import Flights
-from models.user_bookings_model import UserBookings
-from models.users_model import Users
+from db.models import Flights
+from db.models import UserBookings
+from db.models import Users
 
 load_dotenv()
 

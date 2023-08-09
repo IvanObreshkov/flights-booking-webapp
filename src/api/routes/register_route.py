@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import InternalServerError
 
 from api.services.users_services import create_user, add_user_to_db
-from api.database import db
+from db.database import db
 from api.utils import handle_integrity_error
 
 register_bp = Blueprint("register", __name__)

@@ -1,5 +1,5 @@
 from services.flights_services import *
-from api.models.flights_model import Flights
+from db.models import Flights
 
 
 def create_mock_flight(flight_number, start_destination, end_destination, takeoff_time, landing_time, price):

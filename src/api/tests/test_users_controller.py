@@ -1,7 +1,7 @@
 import pytest
 
 from services.users_services import *
-from api.models.users_model import Users
+from db.models import Users
 
 
 def test_validate_data_valid():
