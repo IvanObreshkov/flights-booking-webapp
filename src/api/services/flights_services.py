@@ -142,6 +142,7 @@ def get_flight_passengers_service(flight_number):
 def delete_flight_service(flight_number):
     """Returns JSON formatted response containing a success message if the flight was deleted from the DB
      or an error message along with corresponding status codes"""
+
     try:
         flight = query_flight_by_flight_number(flight_number)
         if flight:
