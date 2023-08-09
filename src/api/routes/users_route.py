@@ -21,19 +21,8 @@ def get_users_route():
 
 @rud_users_bp.get("/users/<uuid:user_uuid>")
 @admin_required
-def get_user(user_uuid):
-    try:
-        user = query_user_by_uuid(user_uuid)
-        if user:
-            return {"User": user.to_json()}, 200
-
-        return {"Message": f"User with uuid {user_uuid} doesn't exist in the DB!"}, 404
-
-    except Exception as e:
-        return {"Message": f"Couldn't retrieve user with uuid {user_uuid} from DB!", "Error": str(e)}, 500
-
-    finally:
-        db.session.close()
+def get_user_route(user_uuid):
+    return get_user_service(user_uuid)
 
 
 @rud_users_bp.delete("/users/<uuid:user_uuid>")

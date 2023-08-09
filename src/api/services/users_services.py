@@ -102,6 +102,22 @@ def query_all_users():
     return all_users
 
 
+def get_user_service(user_uuid):
+    """Returns JSON formatted response containing flight data or an error message along with
+        corresponding status codes"""
+
+    try:
+        user = query_user_by_uuid(user_uuid)
+        if user:
+            return {"User": user.to_json()}, 200
+
+        return {"Message": f"User with uuid {user_uuid} doesn't exist in the DB!"}, 404
+    except Exception as e:
+        return {"Message": f"Couldn't retrieve user with uuid {user_uuid} from DB!", "Error": str(e)}, 500
+    finally:
+        db.session.close()
+
+
 def query_user_by_uuid(user_uuid):
     """Retrieves the user from the db by UUID.
 
@@ -110,17 +126,6 @@ def query_user_by_uuid(user_uuid):
     """
 
     user = db.session.query(Users).get(user_uuid)
-    return user
-
-
-def query_user_by_email(email):
-    """Retrieves the user from the db by email.
-
-    Returns:
-        User obj
-    """
-
-    user = db.session.query(Users).filter_by(email=email).first()
     return user
 
 
