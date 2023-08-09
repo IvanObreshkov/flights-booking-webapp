@@ -7,7 +7,7 @@ from api.models.flights_model import Flights
 from api.models.user_bookings_model import UserBookings
 from api.models.users_model import Users
 from api.services.flights_services import query_flight_by_flight_number
-from api.services.users_services import get_user_by_uuid
+from api.services.users_services import get_user_service
 from api.utils import handle_integrity_error
 
 
@@ -18,7 +18,7 @@ def add_booking_service(request):
     try:
         json_data = request.json
 
-        user = get_user_by_uuid(json_data['user_id'])
+        user = get_user_service(json_data['user_id'])
         flight = query_flight_by_flight_number(json_data["flight_number"])
 
         return validate_and_add_booking(user, flight, json_data)
@@ -133,7 +133,7 @@ def get_user_bookings_service(user_id):
     corresponding status codes"""
 
     try:
-        user = get_user_by_uuid(user_id)
+        user = get_user_service(user_id)
         if user:
             all_user_bookings = get_bookings_by_user_id(user_id)
             if all_user_bookings:
