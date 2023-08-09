@@ -84,11 +84,11 @@ def test_get_user_by_email(mocker):
 
     mock_query.return_value.filter_by.return_value.first.return_value = mock_user
 
-    result = get_user_by_email("ivan@test.com")
+    result = query_user_by_email("ivan@test.com")
     assert result == mock_user
 
     mock_query.return_value.filter_by.return_value.first.return_value = None
-    result = get_user_by_email("invalid_email")
+    result = query_user_by_email("invalid_email")
     assert result is None
 
 

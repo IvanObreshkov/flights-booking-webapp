@@ -23,6 +23,17 @@ def query_user_by_uuid(user_uuid):
     return user
 
 
+def query_user_by_email(email):
+    """Retrieves the user from the db by email.
+
+    Returns:
+        User obj
+    """
+
+    user = db.session.query(Users).filter_by(email=email).first()
+    return user
+
+
 def add_user_to_db(user):
     """Adds the created user object to the database"""
 

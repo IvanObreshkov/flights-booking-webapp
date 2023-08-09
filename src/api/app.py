@@ -2,7 +2,7 @@ from flask import Flask, render_template
 from flask_migrate import Migrate
 
 from api.config import DevConfig
-from db.database import db
+from api.db.database import db
 from api.routes.bookings_route import crud_bookings_bp
 from api.routes.flights_route import crud_flights_bp
 from api.routes.login_route import login_bp

@@ -1,14 +1,9 @@
-import uuid
-
 from sqlalchemy.exc import IntegrityError
 
-from db.database import db
-from db.models.flights_model import Flights
-from db.models.user_bookings_model import UserBookings
-from db.models.users_model import Users
 from api.services.flights_services import query_flight_by_flight_number
-from api.services.users_services import get_user_service
+from api.services.users_services import get_user_by_uuid_service
 from api.utils import handle_integrity_error
+from api.db.repositories.user_bookings_repository import *
 
 
 def add_booking_service(request):
@@ -18,7 +13,7 @@ def add_booking_service(request):
     try:
         json_data = request.json
 
-        user = get_user_service(json_data['user_id'])
+        user = get_user_by_uuid_service(json_data['user_id'])
         flight = query_flight_by_flight_number(json_data["flight_number"])
 
         return validate_and_add_booking(user, flight, json_data)
@@ -30,6 +25,14 @@ def add_booking_service(request):
         return {"Message": f"Couldn't create a new booking. Please try again later!", "Error": str(e)}, 500
     finally:
         db.session.close()
+
+
+def create_booking(json_data):
+    """Creates a new booking with the data from the request body"""
+
+    new_booking = UserBookings(booking_id=uuid.uuid4(), user_id=json_data["user_id"],
+                               flight_number=json_data["flight_number"])
+    return new_booking
 
 
 def validate_and_add_booking(user, flight, json_data):
@@ -48,7 +51,8 @@ def validate_and_add_booking(user, flight, json_data):
         if check_booking_existence(json_data):
             return {"Message": f"User with uuid {user.id} has already booked flight {flight.flight_number}!"}, 409
 
-        add_new_booking(json_data)
+        new_booking = create_booking(json_data)
+        add_booking_to_db(new_booking)
         return {"Message": "New booking added to DB!"}, 200
 
     elif not user:
@@ -56,15 +60,6 @@ def validate_and_add_booking(user, flight, json_data):
 
     elif not flight:
         return {"Message": f"Flight with number: {flight.flight_number} doesn't exist in the DB!"}, 404
-
-
-def add_new_booking(json_data):
-    """Creates a new booking with the data from the request body and adds it to the database """
-
-    new_booking = UserBookings(booking_id=uuid.uuid4(), user_id=json_data["user_id"],
-                               flight_number=json_data["flight_number"])
-    db.session.add(new_booking)
-    db.session.commit()
 
 
 def get_bookings_service():
@@ -87,24 +82,6 @@ def get_bookings_service():
         db.session.close()
 
 
-def get_all_bookings():
-    """Retrieve all bookings from the database
-    Returns:
-            list of all bookings
-    """
-
-    all_bookings = db.session.query(UserBookings). \
-        join(UserBookings.users). \
-        join(UserBookings.flights). \
-        with_entities(UserBookings.booking_id,
-                      Flights.flight_number,
-                      Flights.price,
-                      Users.email,
-                      Users.first_name,
-                      Users.last_name).all()
-    return all_bookings
-
-
 def get_booking_service(booking_id):
     """Returns JSON formatted response containing booking data or an error message along with
     corresponding status codes"""
@@ -121,19 +98,12 @@ def get_booking_service(booking_id):
         db.session.close()
 
 
-def get_booking_by_id(booking_id):
-    """Retrieves a booking from the database by uuid"""
-
-    booking = db.session.query(UserBookings).filter_by(booking_id=str(booking_id)).first()
-    return booking
-
-
 def get_user_bookings_service(user_id):
     """Returns JSON formatted response containing the bookings of a given user or an error message along with
     corresponding status codes"""
 
     try:
-        user = get_user_service(user_id)
+        user = get_user_by_uuid_service(user_id)
         if user:
             all_user_bookings = get_bookings_by_user_id(user_id)
             if all_user_bookings:
@@ -148,28 +118,6 @@ def get_user_bookings_service(user_id):
         return {"Message": "Couldn't retrieve user's bookings from DB!", "Error": str(e)}, 500
     finally:
         db.session.close()
-
-
-def get_bookings_by_user_id(user_id):
-    """Retrieve all user bookings by user_id
-
-    Parameters:
-        user_id (uuid): the uuid of the user
-
-    Returns:
-        list of all bookings of a given user
-
-    """
-    all_user_bookings = db.session.query(UserBookings). \
-        join(UserBookings.users). \
-        join(UserBookings.flights). \
-        with_entities(UserBookings.booking_id, Flights.flight_number, Flights.start_destination,
-                      Flights.end_destination, Flights.takeoff_time, Flights.takeoff_time, Flights.price,
-                      Users.email,
-                      Users.first_name,
-                      Users.last_name). \
-        filter_by(user_id=str(user_id)).all()
-    return all_user_bookings
 
 
 def delete_booking_service(booking_id):
@@ -189,25 +137,3 @@ def delete_booking_service(booking_id):
         return {"Message": f"Couldn't delete booking with uuid {booking_id} from DB!", "Error": str(e)}, 500
     finally:
         db.session.close()
-
-
-def remove_booking(booking):
-    """Deletes a booking from the database"""
-
-    db.session.delete(booking)
-    db.session.commit()
-
-
-def check_booking_existence(json_data):
-    """Checks if a user has already booked a given flight
-    Returns:
-         True - if the user has already booked the flight,
-         False - if the user hasn't booked the flight
-    """
-
-    existing_booking = db.session.query(UserBookings).filter_by(user_id=json_data["user_id"],
-                                                                flight_number=json_data["flight_number"]).all()
-    if existing_booking:
-        return True
-
-    return False

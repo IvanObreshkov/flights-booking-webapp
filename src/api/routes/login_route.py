@@ -3,8 +3,9 @@ from dotenv import load_dotenv
 from flask import Blueprint, request, render_template, make_response
 from werkzeug.exceptions import InternalServerError
 
-from api.services.users_services import validate_data, get_user_by_email
+from api.services.users_services import validate_data
 from api.services.jwt_creation import create_jwt
+from api.db.repositories.users_repository import query_user_by_email
 
 login_bp = Blueprint("login", __name__)
 load_dotenv()
@@ -19,7 +20,7 @@ def login_users():
         email = data["email"]
         raw_password = data["password"]
 
-        user = get_user_by_email(email)
+        user = query_user_by_email(email)
         return validate_user(raw_password, user), 200
 
     except ValueError as e:

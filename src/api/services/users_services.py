@@ -3,7 +3,7 @@ import uuid
 
 import flask_bcrypt
 
-from db.repositories.users_repository import *
+from api.db.repositories.users_repository import *
 
 
 def create_user(data):
@@ -91,7 +91,7 @@ def get_users_service():
         db.session.close()
 
 
-def get_user_service(user_uuid):
+def get_user_by_uuid_service(user_uuid):
     """Returns JSON formatted response containing flight data or an error message along with
         corresponding status codes"""
 

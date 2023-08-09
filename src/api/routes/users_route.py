@@ -7,7 +7,7 @@ from flask_expects_json import expects_json
 
 from api.services.jwt_required_decorators import admin_required
 from api.services.users_services import *
-from json_schemas import update_users_schema
+from api.json_schemas import update_users_schema
 
 rud_users_bp = Blueprint("crud_users", __name__)
 
@@ -21,7 +21,7 @@ def get_users_route():
 @rud_users_bp.get("/users/<uuid:user_uuid>")
 @admin_required
 def get_user_route(user_uuid):
-    return get_user_service(user_uuid)
+    return get_user_by_uuid_service(user_uuid)
 
 
 @rud_users_bp.delete("/users/<uuid:user_uuid>")
