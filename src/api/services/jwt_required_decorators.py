@@ -24,7 +24,9 @@ def admin_required(f):
                 return {"Message": "Invalid or missing auth token."}, 401
         else:
             return {"Message": "No auth token provided."}, 401
+
     return admin_token_check
+
 
 def admin_or_user_id_required(f):
     @wraps(f)
@@ -50,6 +52,7 @@ def admin_or_user_id_required(f):
             return {"Message": "No auth token provided."}, 401
 
     return admin_or_user_check
+
 
 def require_admin_or_user_to_book_a_flight(f):
     @wraps(f)
