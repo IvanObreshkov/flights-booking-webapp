@@ -56,3 +56,13 @@ update_flight_schema = {
     },
     'additionalProperties': False
 }
+
+bookings_schema = {
+    'type': 'object',
+    'properties': {
+        'flight_number': {'type': 'string'},
+        'user_id': {'type': 'string'},
+    },
+    'required': ['flight_number', 'user_id'],
+    'additionalProperties': False
+}
