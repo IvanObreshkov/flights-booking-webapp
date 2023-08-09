@@ -3,8 +3,7 @@ import uuid
 
 import flask_bcrypt
 
-from db.database import db
-from db.models.users_model import Users
+from db.repositories.users_repository import *
 
 
 def create_user(data):
@@ -92,16 +91,6 @@ def get_users_service():
         db.session.close()
 
 
-def query_all_users():
-    """Retrieves all users from the db.
-    Returns:
-         list of all users
-    """
-
-    all_users = db.session.query(Users).all()
-    return all_users
-
-
 def get_user_service(user_uuid):
     """Returns JSON formatted response containing flight data or an error message along with
         corresponding status codes"""
@@ -116,24 +105,6 @@ def get_user_service(user_uuid):
         return {"Message": f"Couldn't retrieve user with uuid {user_uuid} from DB!", "Error": str(e)}, 500
     finally:
         db.session.close()
-
-
-def query_user_by_uuid(user_uuid):
-    """Retrieves the user from the db by UUID.
-
-    Returns:
-        User obj
-    """
-
-    user = db.session.query(Users).get(user_uuid)
-    return user
-
-
-def add_user_to_db(user):
-    """Adds the created user object to the database"""
-
-    db.session.add(user)
-    db.session.commit()
 
 
 def delete_user_service(user_uuid):
@@ -154,14 +125,7 @@ def delete_user_service(user_uuid):
         db.session.close()
 
 
-def delete_user_from_db(user):
-    """Deletes the user from the database"""
-
-    db.session.delete(user)
-    db.session.commit()
-
-
-def update_user_service(user_uuid,request):
+def update_user_service(user_uuid, request):
     """Returns JSON formatted response containing a success message if the user was altered
         successfully in the DB or an error message along with corresponding status codes"""
 
@@ -179,18 +143,3 @@ def update_user_service(user_uuid,request):
         return {"Message": f"Couldn't update user with uuid {user_uuid}", "Error": str(e)}, 500
     finally:
         db.session.close()
-
-
-def edit_user_data(user, json_data):
-    """Updates the user with the provided data in the body of the request
-
-    Parameters:
-        user: The User obj
-        json_data: The body of the PUT request
-    """
-
-    user.first_name = json_data.get('first_name', user.first_name)
-    user.last_name = json_data.get('last_name', user.last_name)
-    user.email = json_data.get('email', user.email)
-    user.password = json_data.get('password', user.password)
-    db.session.commit()
