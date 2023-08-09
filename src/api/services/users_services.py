@@ -136,11 +136,49 @@ def add_user_to_db(user):
     db.session.commit()
 
 
+def delete_user_service(user_uuid):
+    """Returns JSON formatted response containing a success message if the user was deleted from the DB
+     or an error message along with corresponding status codes"""
+
+    try:
+        user = query_user_by_uuid(user_uuid)
+        if user:
+            delete_user_from_db(user)
+            return {"Message": f"User with uuid {user_uuid} was removed successfully from the DB"}, 200
+
+        return {"Message": f"User with uuid {user_uuid} doesn't exist in the DB!"}, 404
+    except Exception as e:
+        db.session.rollback()
+        return {"Message": f"Couldn't delete user with uuid {user_uuid} from DB!", "Error": str(e)}, 500
+    finally:
+        db.session.close()
+
+
 def delete_user_from_db(user):
     """Deletes the user from the database"""
 
     db.session.delete(user)
     db.session.commit()
+
+
+def update_user_service(user_uuid,request):
+    """Returns JSON formatted response containing a success message if the user was altered
+        successfully in the DB or an error message along with corresponding status codes"""
+
+    try:
+        user = query_user_by_uuid(user_uuid)
+        if user:
+            json_data = request.json
+            edit_user_data(user, json_data)
+
+            return {"Message": f"User with uuid {user_uuid} was updated successfully."}, 200
+
+        return {"Message": f"User with uuid {user_uuid} doesn't exist in the DB!"}, 404
+    except Exception as e:
+        db.session.rollback()
+        return {"Message": f"Couldn't update user with uuid {user_uuid}", "Error": str(e)}, 500
+    finally:
+        db.session.close()
 
 
 def edit_user_data(user, json_data):
