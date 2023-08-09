@@ -2,9 +2,9 @@ from flask import Blueprint, request
 from flask_expects_json import expects_json
 from sqlalchemy.exc import IntegrityError
 
-from services.bookings_services import *
-from services.flights_services import get_flight_by_flight_number
-from services.users_services import get_user_by_uuid
+from api.services.bookings_services import *
+from api.services.flights_services import query_flight_by_flight_number
+from api.services.users_services import get_user_by_uuid
 from api.database import db
 from api.services.jwt_required_decorators import admin_required, admin_or_user_id_required, \
     require_admin_or_user_to_book_a_flight
@@ -31,7 +31,7 @@ def add_booking():
         json_data = request.json
 
         user = get_user_by_uuid(json_data['user_id'])
-        flight = get_flight_by_flight_number(json_data["flight_number"])
+        flight = query_flight_by_flight_number(json_data["flight_number"])
 
         return validate_and_add_booking(user, flight, json_data)
 

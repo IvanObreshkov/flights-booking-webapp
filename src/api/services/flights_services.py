@@ -1,3 +1,4 @@
+import json
 import uuid
 
 from api.database import db
@@ -10,12 +11,13 @@ def create_flight(json_data):
     """Creates a new flight with the data from the request body"""
 
     flight = Flights(flight_number=str(uuid.uuid4().hex)[:6].upper(),
-                         start_destination=json_data["start_destination"],
-                         end_destination=json_data["end_destination"],
-                         takeoff_time=json_data["takeoff_time"],
-                         landing_time=json_data['landing_time'],
-                         price=json_data["price"])
+                     start_destination=json_data["start_destination"],
+                     end_destination=json_data["end_destination"],
+                     takeoff_time=json_data["takeoff_time"],
+                     landing_time=json_data['landing_time'],
+                     price=json_data["price"])
     return flight
+
 
 def add_flight_to_db(flight):
     """Add the new flight to the DB"""
@@ -24,7 +26,22 @@ def add_flight_to_db(flight):
     db.session.commit()
 
 
-def get_all_flights():
+def get_flights_service():
+    """Returns JSON formatted response containing flight_data or an error message along with
+    corresponding status codes"""
+    try:
+        all_flights = query_all_flights()
+        flights_list = [flight.to_json() for flight in all_flights]
+        if flights_list:
+            return {"Flights": flights_list}, 200
+        return {"Message": "The flights table is empty"}, 404
+    except Exception as e:
+        return {"Message": "Couldn't retrieve flights from DB!", "Error": str(e)}, 500
+    finally:
+        db.session.close()
+
+
+def query_all_flights():
     """Retrieve all flights from the database
     Returns:
             list of all flights
@@ -33,14 +50,14 @@ def get_all_flights():
     return all_flights
 
 
-def get_flight_by_flight_number(flight_number):
+def query_flight_by_flight_number(flight_number):
     """Retrieves a flight from the database by flight_number (uuid)"""
 
     flight = db.session.query(Flights).get(flight_number)
     return flight
 
 
-def get_passengers_on_flight(flight_number):
+def query_passengers_on_flight(flight_number):
     """Retrieve all passengers (users) on a given flight
     Returns:
         list of users
@@ -68,7 +85,7 @@ def delete_flight_from_db(flight):
 def edit_flight_data(flight, json_data):
     """Updates the user with the provided data in the body of the request
 
-    Parameters:
+    Args:
         flight: The Flight obj
         json_data: The body of the PUT request
     """
@@ -98,5 +115,3 @@ def check_flight_existence(json_data):
         return True
 
     return False
-
-

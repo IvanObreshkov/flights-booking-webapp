@@ -15,7 +15,7 @@ def test_get_all_flights(mocker):
     mock_query = mocker.patch('api.database.db.session.query')
     mock_query.return_value.all.return_value = mock_flights
 
-    result = get_all_flights()
+    result = query_all_flights()
     assert len(result) == 2
     assert result[0].flight_number == '1'
     assert result[0].start_destination == 'London'
@@ -37,11 +37,11 @@ def test_get_user_by_uuid(mocker):
     mock_query = mocker.patch("api.database.db.session.query")
 
     mock_query.return_value.get.return_value = mock_flight
-    result = get_flight_by_flight_number("1")
+    result = query_flight_by_flight_number("1")
     assert result == mock_flight
 
     mock_query.return_value.get.return_value = None
-    result = get_flight_by_flight_number("invalid_uuid")
+    result = query_flight_by_flight_number("invalid_uuid")
     assert result is None
 
 
