@@ -3,10 +3,10 @@ from flask_migrate import Migrate
 
 from api.config import DevConfig
 from api.database import db
-from api.routes.crud_bookings_route import crud_bookings_bp
-from api.routes.crud_flights_route import crud_flights_bp
+from api.routes.bookings_route import crud_bookings_bp
+from api.routes.flights_route import crud_flights_bp
 from api.routes.login_route import login_bp
-from api.routes.rud_users_route import rud_users_bp
+from api.routes.users_route import rud_users_bp
 from api.routes.register_route import register_bp
 
 migrate = Migrate()
