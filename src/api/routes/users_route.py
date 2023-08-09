@@ -8,20 +8,9 @@ from flask_expects_json import expects_json
 from api.services.users_services import *
 from api.database import db
 from api.services.jwt_required_decorators import admin_required
+from json_schemas import update_users_schema
 
 rud_users_bp = Blueprint("crud_users", __name__)
-
-schema = {
-    'type': 'object',
-    'properties': {
-        'first_name': {'type': 'string'},
-        'last_name': {'type': 'string'},
-        'email': {'type': 'string', 'format': 'email'},
-        'password': {'type': 'string'}
-    },
-    'additionalProperties': False
-}
-
 
 @rud_users_bp.get("/users")
 @admin_required
@@ -75,7 +64,7 @@ def delete_user(user_uuid):
 
 @rud_users_bp.put("/users/<uuid:user_uuid>")
 @admin_required
-@expects_json(schema, check_formats=True)
+@expects_json(update_users_schema, check_formats=True)
 def update_user(user_uuid):
     try:
         user = get_user_by_uuid(user_uuid)

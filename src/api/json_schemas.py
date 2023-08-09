@@ -19,6 +19,16 @@ login_schema = {
     'required': ['email', 'password'],
     'additionalProperties': False
 }
+update_users_schema = {
+    'type': 'object',
+    'properties': {
+        'first_name': {'type': 'string'},
+        'last_name': {'type': 'string'},
+        'email': {'type': 'string', 'format': 'email'},
+        'password': {'type': 'string'}
+    },
+    'additionalProperties': False
+}
 
 flights_schema = {
     'type': 'object',
