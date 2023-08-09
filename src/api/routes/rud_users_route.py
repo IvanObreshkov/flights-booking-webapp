@@ -5,7 +5,7 @@
 from flask import Blueprint, request
 from flask_expects_json import expects_json
 
-from api.controllers.users_controller import *
+from services.users_services import *
 from api.database import db
 from api.services.jwt_required_decorators import admin_required
 

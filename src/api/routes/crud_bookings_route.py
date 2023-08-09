@@ -2,9 +2,9 @@ from flask import Blueprint, request
 from flask_expects_json import expects_json
 from sqlalchemy.exc import IntegrityError
 
-from api.controllers.bookings_controller import *
-from api.controllers.flights_controller import get_flight_by_flight_number
-from api.controllers.users_controller import get_user_by_uuid
+from services.bookings_services import *
+from services.flights_services import get_flight_by_flight_number
+from services.users_services import get_user_by_uuid
 from api.database import db
 from api.services.jwt_required_decorators import admin_required, admin_or_user_id_required, \
     require_admin_or_user_to_book_a_flight

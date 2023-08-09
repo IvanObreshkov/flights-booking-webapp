@@ -1,9 +1,7 @@
 import pytest
 
-from api.controllers.users_controller import *
+from services.users_services import *
 from api.models.users_model import Users
-from api.models.flights_model import Flights
-from api.models.user_bookings_model import UserBookings
 
 
 def test_validate_data_valid():

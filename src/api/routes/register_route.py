@@ -7,7 +7,7 @@ from flask import request
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import InternalServerError
 
-from api.controllers.users_controller import create_user, add_user_to_db
+from services.users_services import create_user, add_user_to_db
 from api.database import db
 from api.utils import handle_integrity_error
 

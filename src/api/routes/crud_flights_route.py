@@ -3,7 +3,7 @@ from flask_expects_json import expects_json
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import InternalServerError
 
-from api.controllers.flights_controller import *
+from services.flights_services import *
 from api.database import db
 from api.services.jwt_required_decorators import admin_required
 from api.utils import handle_integrity_error

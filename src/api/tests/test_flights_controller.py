@@ -1,11 +1,5 @@
-from unittest.mock import patch, Mock
-
-import pytest
-
-from api.controllers.flights_controller import *
-from api.models.users_model import Users
+from services.flights_services import *
 from api.models.flights_model import Flights
-from api.models.user_bookings_model import UserBookings
 
 
 def create_mock_flight(flight_number, start_destination, end_destination, takeoff_time, landing_time, price):
