@@ -7,14 +7,16 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import database_exists, create_database
 
-from db.models import Flights
-from db.models import UserBookings
-from db.models import Users
+from api.db.models.flights_model import Flights
+from api.db.models.user_bookings_model import UserBookings
+from api.db.models.users_model import Users
 
 load_dotenv()
 
+# FIXME or remove, there is a problem with the imports
+
 # Create the database engine
-db_uri = os.getenv("MYSQL_DATABASE_URI")
+db_uri = os.getenv("MYSQL_TEST_DATABASE_URI")
 engine = create_engine(db_uri)
 
 if not database_exists(engine.url):
