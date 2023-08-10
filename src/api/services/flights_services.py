@@ -19,12 +19,12 @@ def add_flight_service(request):
         add_flight_to_db(new_flight)
         return {"Message": "New flight added to DB!"}
     except IntegrityError as e:
-        db.session.rollback()
+        db_rollback()
         handle_integrity_error(e)
     except Exception as e:
         return {"Message": f"Couldn't create a new flight. Please try again later!, Error: {str(e)}"}, 500
     finally:
-        db.session.close()
+        close_db_session()
 
 
 def create_flight(json_data):
