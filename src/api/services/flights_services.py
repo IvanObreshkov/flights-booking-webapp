@@ -90,7 +90,7 @@ def get_flight_passengers_service(flight_number):
 
         return {"Message": f"Flight with number {flight_number} doesn't exist in the DB!"}, 404
     except Exception as e:
-        return {"Message": f"Couldn't passengers for flight {flight_number} from DB!", "Error": str(e)}, 500
+        return {"Message": f"Couldn't retrieve passengers for flight {flight_number} from DB!", "Error": str(e)}, 500
     finally:
         close_db_session()
 
