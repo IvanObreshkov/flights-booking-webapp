@@ -164,3 +164,40 @@ def test_get_flight_passengers_service_exception(mock_query_passengers, mock_que
         "Message": f"Couldn't retrieve passengers for flight {flight_number} from DB!",
         "Error": "Test exception",
     }
+
+
+@patch('api.services.flights_services.query_flight_by_flight_number')
+@patch('api.services.flights_services.delete_flight_from_db')
+def test_delete_flight_service_existing_flight(mock_delete_flight, mock_query_flight, app):
+    flight_number = "F123"
+    mock_query_flight.return_value = sample_flight
+
+    response, status_code = delete_flight_service(flight_number)
+    assert status_code == 200
+    assert response == {"Message": f"Flight with number: {flight_number} was removed successfully from the DB"}
+    mock_delete_flight.assert_called_once()
+
+
+@patch('api.services.flights_services.query_flight_by_flight_number')
+@patch('api.services.flights_services.delete_flight_from_db')
+def test_delete_flight_service_existing_flight(mock_delete_flight, mock_query_flight, app):
+    flight_number = "Wrong number"
+    mock_query_flight.return_value = None
+
+    response, status_code = delete_flight_service(flight_number)
+    assert status_code == 404
+    assert response == {"Message": f"Flight with number: {flight_number} doesn't exist in the DB!"}
+    mock_delete_flight.assert_not_called()
+
+@patch('api.services.flights_services.query_flight_by_flight_number')
+@patch('api.services.flights_services.delete_flight_from_db')
+def test_delete_flight_service_exception(mock_delete_flight, mock_query_flight, app):
+    flight_number = "F123"
+    mock_delete_flight.side_effect = Exception("Test exception")
+    mock_query_flight.side_effect = Exception("Test exception")
+
+    response, status_code = delete_flight_service(flight_number)
+    assert status_code == 500
+    assert response == {"Message": f"Couldn't delete flight with number: {flight_number} from DB!",
+                        "Error": "Test exception"}
+    mock_delete_flight.assert_not_called()
