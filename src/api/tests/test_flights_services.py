@@ -2,7 +2,6 @@ from collections import namedtuple
 from unittest.mock import patch, MagicMock
 
 import pytest
-from sqlalchemy import Row
 
 from api.app import create_app
 from api.config import TestConfig
