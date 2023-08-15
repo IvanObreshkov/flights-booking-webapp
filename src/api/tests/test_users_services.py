@@ -1,8 +1,8 @@
 import pytest
 
-from app import create_app
-from config import TestConfig
-from db.models.users_model import Users
+from api.app import create_app
+from api.config import TestConfig
+from api.db.models.users_model import Users
 
 
 @pytest.fixture
@@ -46,3 +46,4 @@ def app():
     app = create_app(TestConfig)
     with app.app_context():
         yield app
+
