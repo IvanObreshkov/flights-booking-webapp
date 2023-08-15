@@ -6,7 +6,7 @@ import flask_bcrypt
 from api.db.repositories.users_repository import *
 
 
-def create_user(data):
+def create_user_service(data):
     """
     Creates a new user object with the provided data.
 

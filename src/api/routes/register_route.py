@@ -7,7 +7,7 @@ from flask import request
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import InternalServerError
 
-from api.services.users_services import create_user, add_user_to_db
+from api.services.users_services import create_user_service, add_user_to_db
 from api.utils import handle_integrity_error
 from api.db.database import db
 
@@ -18,7 +18,7 @@ register_bp = Blueprint("register", __name__)
 def register_user():
     try:
         data = request.form
-        new_user = create_user(data)
+        new_user = create_user_service(data)
         add_user_to_db(new_user)
 
         return render_template('register.html', msg="New user added to DB!"), 200
