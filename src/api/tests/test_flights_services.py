@@ -180,7 +180,7 @@ def test_delete_flight_service_existing_flight(mock_delete_flight, mock_query_fl
 
 @patch('api.services.flights_services.query_flight_by_flight_number')
 @patch('api.services.flights_services.delete_flight_from_db')
-def test_delete_flight_service_existing_flight(mock_delete_flight, mock_query_flight, app):
+def test_delete_flight_service_wrong_flight_number(mock_delete_flight, mock_query_flight, app):
     flight_number = "Wrong number"
     mock_query_flight.return_value = None
 
@@ -188,6 +188,7 @@ def test_delete_flight_service_existing_flight(mock_delete_flight, mock_query_fl
     assert status_code == 404
     assert response == {"Message": f"Flight with number: {flight_number} doesn't exist in the DB!"}
     mock_delete_flight.assert_not_called()
+
 
 @patch('api.services.flights_services.query_flight_by_flight_number')
 @patch('api.services.flights_services.delete_flight_from_db')
@@ -201,3 +202,43 @@ def test_delete_flight_service_exception(mock_delete_flight, mock_query_flight, 
     assert response == {"Message": f"Couldn't delete flight with number: {flight_number} from DB!",
                         "Error": "Test exception"}
     mock_delete_flight.assert_not_called()
+
+
+@patch('api.services.flights_services.query_flight_by_flight_number')
+@patch('api.services.flights_services.edit_flight_data')
+def test_update_flight_service_existing_flight(mock_edit_flight_data, mock_query_flight, app):
+    flight_number = "F123"
+    mock_query_flight.return_value = sample_flight
+    request = MagicMock()
+    request.json = {"price": 400}
+    response, status_code = update_flight_service(flight_number, request)
+    assert status_code == 200
+    mock_edit_flight_data.assert_called_once_with(sample_flight, request.json)
+
+
+@patch('api.services.flights_services.query_flight_by_flight_number')
+@patch('api.services.flights_services.edit_flight_data')
+def test_update_flight_service_wrong_flight_number(mock_edit_flight_data, mock_query_flight, app):
+    flight_number = "Wrong number"
+    mock_query_flight.return_value = None
+    request = MagicMock()
+    request.json = {"price": 400}
+    response, status_code = update_flight_service(flight_number, request)
+    assert status_code == 404
+    assert response == {"Message": f"Flight with number: {flight_number} doesn't exist in the DB!"}
+    mock_edit_flight_data.assert_not_called()
+
+
+@patch('api.services.flights_services.query_flight_by_flight_number')
+@patch('api.services.flights_services.edit_flight_data')
+def test_update_flight_service_exception(mock_edit_flight_data, mock_query_flight, app):
+    flight_number = "F123"
+    mock_query_flight.side_effect = Exception("Test exception")
+    mock_edit_flight_data.side_effect = Exception("Test exception")
+    request = MagicMock()
+    request.json = {"price": 400}
+    response, status_code = update_flight_service(flight_number, request)
+    assert status_code == 500
+    assert response == {'Message': "Couldn't update flight with number: F123",
+                        "Error": "Test exception"}
+    mock_edit_flight_data.assert_not_called()
