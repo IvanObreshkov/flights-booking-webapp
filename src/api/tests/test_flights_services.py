@@ -54,6 +54,20 @@ def app():
         yield app
 
 
+@patch('api.services.flights_services.check_flight_existence')
+@patch('api.services.flights_services.add_flight_to_db')
+@patch('api.services.flights_services.create_flight')
+def test_add_flight_service(mock_create_flight, mock_add_flight_to_db, mock_check_flight_existence, app):
+    mock_request = MagicMock()
+    mock_request.json = {"data": "flight_data"}
+    mock_check_flight_existence.return_value = False
+    mock_create_flight.return_value = sample_flight
+    response, status_code = add_flight_service(mock_request)
+    assert status_code == 200
+    assert response == {"Message": "New flight added to DB!"}
+    mock_add_flight_to_db.called_once_with(sample_flight)
+
+
 @patch('api.services.flights_services.query_all_flights')
 def test_get_flights_service_not_empty(mock_query_all_flights, sample_flight_list, app):
     mock_query_all_flights.return_value = sample_flight_list
