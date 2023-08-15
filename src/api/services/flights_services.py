@@ -14,10 +14,10 @@ def add_flight_service(request):
         json_data = request.json
         if check_flight_existence(json_data):
             return {"Message": "Cannot add the certain flight! "
-                               "A flight with the same data already exist in the database!"}
+                               "A flight with the same data already exist in the database!"}, 409
         new_flight = create_flight(json_data)
         add_flight_to_db(new_flight)
-        return {"Message": "New flight added to DB!"}
+        return {"Message": "New flight added to DB!"}, 200
     except IntegrityError as e:
         db_rollback()
         handle_integrity_error(e)
