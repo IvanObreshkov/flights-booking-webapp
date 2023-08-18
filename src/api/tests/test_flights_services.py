@@ -68,6 +68,32 @@ def test_add_flight_service(mock_create_flight, mock_add_flight_to_db, mock_chec
     mock_add_flight_to_db.called_once_with(sample_flight)
 
 
+@patch('api.services.flights_services.check_flight_existence')
+@patch('api.services.flights_services.add_flight_to_db')
+def test_add_flight_service_existing_flight(mock_add_flight_to_db, mock_check_flight_existence, app):
+    mock_request = MagicMock()
+    mock_request.json = {"data": "existing_flight"}
+    mock_check_flight_existence.return_value = True
+    response, status_code = add_flight_service(mock_request)
+    assert status_code == 409
+    assert response == {
+        'Message': 'Cannot add the certain flight! A flight with the same data already exist in the database!'}
+    mock_add_flight_to_db.assert_not_called()
+
+
+@patch('api.services.flights_services.check_flight_existence')
+@patch('api.services.flights_services.add_flight_to_db')
+@patch('api.services.flights_services.create_flight')
+def test_add_flight_service_exception(mock_create_flight, mock_add_flight_to_db, mock_check_flight_existence, app):
+    mock_request = MagicMock()
+    mock_request.json = {"data": "existing_flight"}
+    mock_check_flight_existence.return_value = False
+    mock_create_flight.return_value = sample_flight
+    mock_add_flight_to_db.side_effect = Exception("Test exception")
+    response, status_code = add_flight_service(mock_request)
+    assert status_code == 500
+    assert response == {"Message": f"Couldn't create a new flight. Please try again later!", "Error": "Test exception"}
+
 @patch('api.services.flights_services.query_all_flights')
 def test_get_flights_service_not_empty(mock_query_all_flights, sample_flight_list, app):
     mock_query_all_flights.return_value = sample_flight_list
