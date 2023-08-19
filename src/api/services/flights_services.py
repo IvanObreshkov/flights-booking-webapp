@@ -22,7 +22,7 @@ def add_flight_service(request):
         db_rollback()
         handle_integrity_error(e)
     except Exception as e:
-        return {"Message": f"Couldn't create a new flight. Please try again later!, Error: {str(e)}"}, 500
+        return {"Message": f"Couldn't create a new flight. Please try again later!", "Error": str(e)}, 500
     finally:
         close_db_session()
 
