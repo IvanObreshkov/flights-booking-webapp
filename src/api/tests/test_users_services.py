@@ -5,7 +5,7 @@ import pytest
 from api.app import create_app
 from api.config import TestConfig
 from api.db.models.users_model import Users
-from api.services.users_services import validate_data, get_users_service, get_user_by_uuid_service
+from api.services.users_services import validate_data, get_users_service, get_user_by_uuid_service, delete_user_service
 
 
 @pytest.fixture
@@ -137,3 +137,41 @@ def test_get_user_by_uuid_service_exception(mock_query_user, app):
         "Message": f"Couldn't retrieve user with uuid {user_uuid} from DB!",
         "Error": "Test exception",
     }
+
+
+@patch('api.services.users_services.query_user_by_uuid')
+@patch('api.services.users_services.delete_user_from_db')
+def test_delete_user_service_existing_user(mock_delete_user, mock_query_user, app):
+    user_uuid = "user1"
+    mock_query_user.return_value = sample_user
+
+    response, status_code = delete_user_service(user_uuid)
+    assert status_code == 200
+    assert response == {"Message": f"User with uuid {user_uuid} was removed successfully from the DB"}
+    mock_delete_user.assert_called_once()
+
+
+@patch('api.services.users_services.query_user_by_uuid')
+@patch('api.services.users_services.delete_user_from_db')
+def test_delete_user_service_wrong_user_uuid(mock_delete_user, mock_query_user, app):
+    user_uuid = "Wrong user"
+    mock_query_user.return_value = None
+
+    response, status_code = delete_user_service(user_uuid)
+    assert status_code == 404
+    assert response == {"Message": f"User with uuid {user_uuid} doesn't exist in the DB!"}
+    mock_delete_user.assert_not_called()
+
+
+@patch('api.services.users_services.query_user_by_uuid')
+@patch('api.services.users_services.delete_user_from_db')
+def test_delete_user_service_exception(mock_delete_user, mock_query_user, app):
+    user_uuid = "user1"
+    mock_delete_user.side_effect = Exception("Test exception")
+    mock_query_user.side_effect = Exception("Test exception")
+
+    response, status_code = delete_user_service(user_uuid)
+    assert status_code == 500
+    assert response == {"Message": f"Couldn't delete user with uuid {user_uuid} from DB!",
+                        "Error": "Test exception"}
+    mock_delete_user.assert_not_called()
