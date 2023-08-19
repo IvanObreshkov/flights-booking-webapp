@@ -5,7 +5,7 @@ import pytest
 from api.app import create_app
 from api.config import TestConfig
 from api.db.models.users_model import Users
-from api.services.users_services import validate_data
+from api.services.users_services import validate_data, get_users_service
 
 
 @pytest.fixture
@@ -81,3 +81,29 @@ def test_validate_data_invalid_email():
     }
     with pytest.raises(ValueError):
         validate_data(data)
+
+@patch('api.services.users_services.query_all_users')
+def test_get_users_service_not_empty(mock_query_all_users, sample_users_list, app):
+    mock_query_all_users.return_value = sample_users_list
+    response, status_code = get_users_service()
+    assert status_code == 200
+    assert "Users" in response
+
+
+@patch('api.services.users_services.query_all_users')
+def test_get_users_service_empty(mock_query_all_users, app):
+    mock_query_all_users.return_value = []
+    response, status_code = get_users_service()
+    assert status_code == 404
+    assert response == {"Message": "The users table is empty"}
+
+
+@patch('api.services.users_services.query_all_users')
+def test_get_users_service_exception(mock_query_all_users, app):
+    mock_query_all_users.side_effect = Exception("Test exception")
+    response, status_code = get_users_service()
+    assert status_code == 500
+    assert response == {
+        "Message": "Couldn't retrieve users from DB!",
+        "Error": "Test exception",
+    }
