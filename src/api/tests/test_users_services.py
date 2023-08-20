@@ -5,7 +5,8 @@ import pytest
 from api.app import create_app
 from api.config import TestConfig
 from api.db.models.users_model import Users
-from api.services.users_services import validate_data, get_users_service, get_user_by_uuid_service, delete_user_service
+from api.services.users_services import validate_data, get_users_service, get_user_by_uuid_service, delete_user_service, \
+    update_user_service
 
 
 @pytest.fixture
@@ -175,3 +176,44 @@ def test_delete_user_service_exception(mock_delete_user, mock_query_user, app):
     assert response == {"Message": f"Couldn't delete user with uuid {user_uuid} from DB!",
                         "Error": "Test exception"}
     mock_delete_user.assert_not_called()
+
+
+@patch('api.services.users_services.query_user_by_uuid')
+@patch('api.services.users_services.edit_user_data')
+def test_update_user_service_existing_user(mock_edit_user_data, mock_query_user, app):
+    user_uuid = "user1"
+    mock_query_user.return_value = sample_user
+    request = MagicMock()
+    request.json = {"first_name": "Gosho"}
+    response, status_code = update_user_service(user_uuid, request)
+    assert status_code == 200
+    assert response == {"Message": f"User with uuid {user_uuid} was updated successfully."}
+    mock_edit_user_data.assert_called_once_with(sample_user, request.json)
+
+
+@patch('api.services.users_services.query_user_by_uuid')
+@patch('api.services.users_services.edit_user_data')
+def test_update_user_service_wrong_user_number(mock_edit_user_data, mock_query_user, app):
+    user_uuid = "Wrong user"
+    mock_query_user.return_value = None
+    request = MagicMock()
+    request.json = {"first_name": "Gosho"}
+    response, status_code = update_user_service(user_uuid, request)
+    assert status_code == 404
+    assert response == {"Message": f"User with uuid {user_uuid} doesn't exist in the DB!"}
+    mock_edit_user_data.assert_not_called()
+
+
+@patch('api.services.users_services.query_user_by_uuid')
+@patch('api.services.users_services.edit_user_data')
+def test_update_user_service_exception(mock_edit_user_data, mock_query_user, app):
+    user_uuid = "user1"
+    mock_query_user.side_effect = Exception("Test exception")
+    mock_edit_user_data.side_effect = Exception("Test exception")
+    request = MagicMock()
+    request.json = {"first_name": "Gosho"}
+    response, status_code = update_user_service(user_uuid, request)
+    assert status_code == 500
+    assert response == {"Message": f"Couldn't update user with uuid {user_uuid}",
+                        "Error": "Test exception"}
+    mock_edit_user_data.assert_not_called()
