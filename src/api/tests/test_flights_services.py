@@ -254,6 +254,7 @@ def test_update_flight_service_existing_flight(mock_edit_flight_data, mock_query
     request.json = {"price": 400}
     response, status_code = update_flight_service(flight_number, request)
     assert status_code == 200
+    assert response == {"Message": f"Flight with number: {flight_number} was updated successfully."}
     mock_edit_flight_data.assert_called_once_with(sample_flight, request.json)
 
 
