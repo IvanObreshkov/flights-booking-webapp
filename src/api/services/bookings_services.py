@@ -126,7 +126,7 @@ def delete_booking_service(booking_id):
     try:
         booking = query_booking_by_id(booking_id)
         if booking:
-            remove_booking(booking)
+            delete_booking_from_db(booking)
             return {"Message": f"User with uuid {booking_id} was removed successfully from the DB"}, 200
 
         return {"Message": f"Booking with uuid {booking_id} doesn't exist in the DB!"}, 404

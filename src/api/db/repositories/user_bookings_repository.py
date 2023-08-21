@@ -68,7 +68,7 @@ def check_booking_existence(json_data):
     return False
 
 
-def remove_booking(booking):
+def delete_booking_from_db(booking):
     """Deletes a booking from the database"""
 
     db.session.delete(booking)
