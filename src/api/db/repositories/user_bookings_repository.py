@@ -45,7 +45,7 @@ def query_bookings_by_user_id(user_id):
         join(UserBookings.users). \
         join(UserBookings.flights). \
         with_entities(UserBookings.booking_id, Flights.flight_number, Flights.start_destination,
-                      Flights.end_destination, Flights.takeoff_time, Flights.takeoff_time, Flights.price,
+                      Flights.end_destination, Flights.takeoff_time, Flights.landing_time, Flights.price,
                       Users.email,
                       Users.first_name,
                       Users.last_name). \
