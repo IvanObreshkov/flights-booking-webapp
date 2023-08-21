@@ -46,20 +46,19 @@ def validate_and_add_booking(user, flight, json_data):
         - 409 status code if user has already booked that flight
         - 404 status code if user or flight doesn't exist
     """
+    if user is None:
+        return {"Message": f"User with uuid {json_data['user_id']} doesn't exist in the DB!"}, 404
 
-    if user and flight:
-        if check_booking_existence(json_data):
-            return {"Message": f"User with uuid {user.id} has already booked flight {flight.flight_number}!"}, 409
+    if flight is None:
+        return {"Message": f"Flight with number: {json_data['flight_number']} doesn't exist in the DB!"}, 404
 
-        new_booking = create_booking(json_data)
-        add_booking_to_db(new_booking)
-        return {"Message": "New booking added to DB!"}, 200
+    if check_booking_existence(json_data):
+        return {
+            "Message": f"User with uuid {json_data['user_id']} has already booked flight {flight.flight_number}!"}, 409
 
-    elif not user:
-        return {"Message": f"User with uuid {user.id} doesn't exist in the DB!"}, 404
-
-    elif not flight:
-        return {"Message": f"Flight with number: {flight.flight_number} doesn't exist in the DB!"}, 404
+    new_booking = create_booking(json_data)
+    add_booking_to_db(new_booking)
+    return {"Message": "New booking added to DB!"}, 200
 
 
 def get_bookings_service():
