@@ -7,7 +7,7 @@ from api.app import create_app
 from api.config import TestConfig
 from api.db.models.user_bookings_model import UserBookings
 from api.services.bookings_services import validate_and_add_booking, add_booking_service, get_bookings_service, \
-    get_booking_service
+    get_booking_service, get_user_bookings_service
 
 
 @pytest.fixture
@@ -156,3 +156,64 @@ def test_get_booking_service_exception(mock_query_booking, app):
         "Message": f"Couldn't retrieve Booking with uuid {booking_id} from DB!",
         "Error": "Test exception",
     }
+
+
+@patch('api.services.bookings_services.get_user_by_uuid_service')
+@patch('api.services.bookings_services.query_bookings_by_user_id')
+def test_get_user_bookings_service_existing_user(mock_query_bookings_by_user_id, mock_get_user_by_uuid_service, app):
+    user_id = "user_1"
+    UsersBookingsRow = namedtuple('BookingsRow',
+                                  ['booking_id', 'flight_number', 'start_destination', 'end_destination',
+                                   'takeoff_time', 'landing_time', 'price', 'email', 'first_name', 'last_name'])
+
+    users_bookings_data = [
+        UsersBookingsRow(booking_id='70e4c838-a57d-46fc-9050-c94b6ab946e9', flight_number="F123",
+                         start_destination="City C", end_destination="City D",
+                         takeoff_time="2023-08-10 14:00", landing_time="2023-08-10 16:00", price=123,
+                         email='dani@gmail.com', first_name='Dani', last_name='Ivanov'),
+        UsersBookingsRow(booking_id='8c8565cf-4384-4474-a8c7-10a62b27ceed', flight_number="F123",
+                         start_destination="City C", end_destination="City D",
+                         takeoff_time="2023-08-10 14:00", landing_time="2023-08-10 16:00", price=123,
+                         email='ivan@gmail.com', first_name='Ivan', last_name='Obreshkov')
+    ]
+    mock_get_user_by_uuid_service.return_value = MagicMock()
+    mock_query_bookings_by_user_id.return_value = users_bookings_data
+    response, status_code = get_user_bookings_service(user_id)
+    assert status_code == 200
+    assert "User's Bookings" in response
+
+
+@patch('api.services.bookings_services.get_user_by_uuid_service')
+@patch('api.services.bookings_services.query_bookings_by_user_id')
+def test_get_user_bookings_service_not_existing_bookings(mock_query_bookings_by_user_id, mock_get_user_by_uuid_service,
+                                                         app):
+    user_id = "user_1"
+
+    mock_get_user_by_uuid_service.return_value = MagicMock()
+    mock_query_bookings_by_user_id.return_value = []
+    response, status_code = get_user_bookings_service(user_id)
+    assert status_code == 404
+    assert response == {"Message": f"User with uuid {user_id} has not booked any flights!"}
+
+
+@patch('api.services.bookings_services.get_user_by_uuid_service')
+def test_get_user_bookings_service_non_existing_user(mock_get_user_by_uuid_service, app):
+    user_id = "Wrong user"
+
+    mock_get_user_by_uuid_service.return_value = None
+    response, status_code = get_user_bookings_service(user_id)
+    assert status_code == 404
+    assert response == {"Message": f"User with uuid {user_id} doesn't exist in the DB!"}
+
+
+@patch('api.services.bookings_services.get_user_by_uuid_service')
+@patch('api.services.bookings_services.query_bookings_by_user_id')
+def test_get_user_bookings_service_exception(mock_query_bookings_by_user_id, mock_get_user_by_uuid_service, app):
+    user_id = "user_1"
+
+    mock_get_user_by_uuid_service.side_effect = Exception("Test exception")
+    mock_query_bookings_by_user_id.side_effect = Exception("Test exception")
+    response, status_code = get_user_bookings_service(user_id)
+    assert status_code == 500
+    assert response == {"Message": "Couldn't retrieve user's bookings from DB!",
+                        "Error": "Test exception"}
