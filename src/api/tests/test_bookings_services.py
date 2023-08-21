@@ -6,7 +6,8 @@ import pytest
 from api.app import create_app
 from api.config import TestConfig
 from api.db.models.user_bookings_model import UserBookings
-from api.services.bookings_services import validate_and_add_booking, add_booking_service, get_bookings_service
+from api.services.bookings_services import validate_and_add_booking, add_booking_service, get_bookings_service, \
+    get_booking_service
 
 
 @pytest.fixture
@@ -123,5 +124,35 @@ def test_get_bookings_service_exception(mock_query_all_bookings, app):
     assert status_code == 500
     assert response == {
         "Message": "Couldn't retrieve bookings from DB!",
+        "Error": "Test exception",
+    }
+
+
+@patch('api.services.bookings_services.query_booking_by_id')
+def test_get_booking_service_existing(mock_query_booking, sample_booking, app):
+    booking_id = 'booking_1'
+    mock_query_booking.return_value = sample_booking
+    response, status_code = get_booking_service(booking_id)
+    assert status_code == 200
+    assert "Booking" in response
+
+
+@patch('api.services.bookings_services.query_booking_by_id')
+def test_get_booking_service_non_existing(mock_query_booking, app):
+    booking_id = 'Wrong booking'
+    mock_query_booking.return_value = None
+    response, status_code = get_booking_service("Wrong booking")
+    assert status_code == 404
+    assert response == {"Message": f"Booking with uuid {booking_id} doesn't exist in the DB!"}
+
+
+@patch('api.services.bookings_services.query_booking_by_id')
+def test_get_booking_service_exception(mock_query_booking, app):
+    booking_id = 'booking_1'
+    mock_query_booking.side_effect = Exception("Test exception")
+    response, status_code = get_booking_service(booking_id)
+    assert status_code == 500
+    assert response == {
+        "Message": f"Couldn't retrieve Booking with uuid {booking_id} from DB!",
         "Error": "Test exception",
     }
