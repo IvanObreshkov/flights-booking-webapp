@@ -6,7 +6,7 @@ from api.db.models.user_bookings_model import UserBookings
 from api.db.models.users_model import Users
 
 
-def get_all_bookings():
+def query_all_bookings():
     """Retrieve all bookings from the database
     Returns:
             list of all bookings
@@ -24,14 +24,14 @@ def get_all_bookings():
     return all_bookings
 
 
-def get_booking_by_id(booking_id):
+def query_booking_by_id(booking_id):
     """Retrieves a booking from the database by uuid"""
 
     booking = db.session.query(UserBookings).filter_by(booking_id=str(booking_id)).first()
     return booking
 
 
-def get_bookings_by_user_id(user_id):
+def query_bookings_by_user_id(user_id):
     """Retrieve all user bookings by user_id
 
     Parameters:
