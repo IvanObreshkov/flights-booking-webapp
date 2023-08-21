@@ -1,3 +1,4 @@
+from collections import namedtuple
 from unittest.mock import patch, MagicMock
 
 import pytest
@@ -5,20 +6,12 @@ import pytest
 from api.app import create_app
 from api.config import TestConfig
 from api.db.models.user_bookings_model import UserBookings
-from api.services.bookings_services import validate_and_add_booking, add_booking_service
+from api.services.bookings_services import validate_and_add_booking, add_booking_service, get_bookings_service
 
 
 @pytest.fixture
 def sample_booking():
     return UserBookings(booking_id='booking_1', user_id="user_1", flight_number="F123")
-
-
-@pytest.fixture
-def sample_bookings_list():
-    return [
-        UserBookings(booking_id='booking_1', user_id="user_1", flight_number="F123"),
-        UserBookings(booking_id='booking_2', user_id="user_2", flight_number="F456")
-    ]
 
 
 @pytest.fixture
@@ -96,3 +89,39 @@ def test_add_booking_service_exception(mock_get_user_by_uuid_service, mock_query
                         "Error": "Test exception"}
     assert status_code == 500
     mock_validate_and_add_booking.assert_not_called()
+
+
+@patch('api.services.bookings_services.query_all_bookings')
+def test_get_bookings_service_not_empty(mock_query_all_bookings, app):
+    BookingsRow = namedtuple('BookingsRow',
+                             ['booking_id', 'flight_number', 'price', 'email', 'first_name', 'last_name'])
+
+    bookings_data = [
+        BookingsRow(booking_id='70e4c838-a57d-46fc-9050-c94b6ab946e9', flight_number="F123", price=123,
+                    email='dani@gmail.com', first_name='Dani', last_name='Ivanov'),
+        BookingsRow(booking_id='8c8565cf-4384-4474-a8c7-10a62b27ceed', flight_number="F123", price=345,
+                    email='ivan@gmail.com', first_name='Ivan', last_name='Obreshkov')
+    ]
+    mock_query_all_bookings.return_value = bookings_data
+    response, status_code = get_bookings_service()
+    assert status_code == 200
+    assert "All bookings" in response
+
+
+@patch('api.services.bookings_services.query_all_bookings')
+def test_get_bookings_service_empty(mock_query_all_bookings, app):
+    mock_query_all_bookings.return_value = []
+    response, status_code = get_bookings_service()
+    assert status_code == 404
+    assert response == {"Message": "The bookings table is empty"}
+
+
+@patch('api.services.bookings_services.query_all_bookings')
+def test_get_bookings_service_exception(mock_query_all_bookings, app):
+    mock_query_all_bookings.side_effect = Exception("Test exception")
+    response, status_code = get_bookings_service()
+    assert status_code == 500
+    assert response == {
+        "Message": "Couldn't retrieve bookings from DB!",
+        "Error": "Test exception",
+    }
