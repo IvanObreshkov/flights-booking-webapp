@@ -136,3 +136,7 @@ def delete_booking_service(booking_id):
         return {"Message": f"Couldn't delete booking with uuid {booking_id} from DB!", "Error": str(e)}, 500
     finally:
         db.session.close()
+
+# We don't have an update_service as in the other files,
+# because we decided that the booking would be immutable,
+# as the user shouldn't be able to change which flight they have booked
