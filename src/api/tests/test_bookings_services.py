@@ -7,7 +7,8 @@ from api.app import create_app
 from api.config import TestConfig
 from api.db.models.user_bookings_model import UserBookings
 from api.services.bookings_services import validate_and_add_booking, add_booking_service, get_bookings_service, \
-    get_booking_service, get_user_bookings_service
+    get_booking_service, get_user_bookings_service, delete_booking_service
+from api.db.repositories.user_bookings_repository import delete_booking_from_db
 
 
 @pytest.fixture
@@ -217,3 +218,38 @@ def test_get_user_bookings_service_exception(mock_query_bookings_by_user_id, moc
     assert status_code == 500
     assert response == {"Message": "Couldn't retrieve user's bookings from DB!",
                         "Error": "Test exception"}
+
+
+@patch('api.services.bookings_services.query_booking_by_id')
+@patch('api.services.bookings_services.delete_booking_from_db')
+def test_delete_booking_service_existing_booking(mock_remove_booking, mock_query_booking_by_id, app):
+    booking_id = 'booking_1'
+    mock_query_booking_by_id.return_value = sample_booking
+    response, status_code = delete_booking_service(booking_id)
+    assert status_code == 200
+    assert response == {"Message": f"User with uuid {booking_id} was removed successfully from the DB"}
+    mock_remove_booking.assert_called_once_with(sample_booking)
+
+
+@patch('api.services.bookings_services.query_booking_by_id')
+@patch('api.services.bookings_services.delete_booking_from_db')
+def test_delete_booking_service_non_existing_booking(mock_remove_booking, mock_query_booking_by_id, app):
+    booking_id = 'Wrong booking'
+    mock_query_booking_by_id.return_value = None
+    response, status_code = delete_booking_service(booking_id)
+    assert status_code == 404
+    assert response == {"Message": f"Booking with uuid {booking_id} doesn't exist in the DB!"}
+    mock_remove_booking.assert_not_called()
+
+
+@patch('api.services.bookings_services.query_booking_by_id')
+@patch('api.services.bookings_services.delete_booking_from_db')
+def test_delete_booking_service_non_existing_booking(mock_remove_booking, mock_query_booking_by_id, app):
+    booking_id = 'booking_1'
+    mock_query_booking_by_id.side_effect = Exception("Test exception")
+    mock_remove_booking.side_effect = Exception("Test exception")
+    response, status_code = delete_booking_service(booking_id)
+    assert status_code == 500
+    assert response == {"Message": f"Couldn't delete booking with uuid {booking_id} from DB!",
+                        "Error": "Test exception"}
+    mock_remove_booking.assert_not_called()
