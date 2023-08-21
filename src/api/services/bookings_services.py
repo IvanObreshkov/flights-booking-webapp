@@ -46,20 +46,19 @@ def validate_and_add_booking(user, flight, json_data):
         - 409 status code if user has already booked that flight
         - 404 status code if user or flight doesn't exist
     """
+    if user is None:
+        return {"Message": f"User with uuid {json_data['user_id']} doesn't exist in the DB!"}, 404
 
-    if user and flight:
-        if check_booking_existence(json_data):
-            return {"Message": f"User with uuid {user.id} has already booked flight {flight.flight_number}!"}, 409
+    if flight is None:
+        return {"Message": f"Flight with number: {json_data['flight_number']} doesn't exist in the DB!"}, 404
 
-        new_booking = create_booking(json_data)
-        add_booking_to_db(new_booking)
-        return {"Message": "New booking added to DB!"}, 200
+    if check_booking_existence(json_data):
+        return {
+            "Message": f"User with uuid {json_data['user_id']} has already booked flight {flight.flight_number}!"}, 409
 
-    elif not user:
-        return {"Message": f"User with uuid {user.id} doesn't exist in the DB!"}, 404
-
-    elif not flight:
-        return {"Message": f"Flight with number: {flight.flight_number} doesn't exist in the DB!"}, 404
+    new_booking = create_booking(json_data)
+    add_booking_to_db(new_booking)
+    return {"Message": "New booking added to DB!"}, 200
 
 
 def get_bookings_service():
@@ -67,7 +66,7 @@ def get_bookings_service():
     corresponding status codes"""
 
     try:
-        all_bookings = get_all_bookings()
+        all_bookings = query_all_bookings()
 
         if all_bookings:
             # When querying individual rows the row is a KeyedTuple which has an _asdict method
@@ -87,7 +86,7 @@ def get_booking_service(booking_id):
     corresponding status codes"""
 
     try:
-        booking = get_booking_by_id(booking_id)
+        booking = query_booking_by_id(booking_id)
         if booking:
             return {"Booking": booking.to_json()}, 200
 
@@ -105,7 +104,7 @@ def get_user_bookings_service(user_id):
     try:
         user = get_user_by_uuid_service(user_id)
         if user:
-            all_user_bookings = get_bookings_by_user_id(user_id)
+            all_user_bookings = query_bookings_by_user_id(user_id)
             if all_user_bookings:
                 # When querying individual rows the row is a KeyedTuple which has an _asdict method
                 user_bookings = [booking._asdict() for booking in all_user_bookings]
@@ -125,9 +124,9 @@ def delete_booking_service(booking_id):
      or an error message along with corresponding status codes"""
 
     try:
-        booking = get_booking_by_id(booking_id)
+        booking = query_booking_by_id(booking_id)
         if booking:
-            remove_booking(booking)
+            delete_booking_from_db(booking)
             return {"Message": f"User with uuid {booking_id} was removed successfully from the DB"}, 200
 
         return {"Message": f"Booking with uuid {booking_id} doesn't exist in the DB!"}, 404
@@ -137,3 +136,7 @@ def delete_booking_service(booking_id):
         return {"Message": f"Couldn't delete booking with uuid {booking_id} from DB!", "Error": str(e)}, 500
     finally:
         db.session.close()
+
+# We don't have an update_service as in the other files,
+# because we decided that the booking would be immutable,
+# as the user shouldn't be able to change which flight they have booked

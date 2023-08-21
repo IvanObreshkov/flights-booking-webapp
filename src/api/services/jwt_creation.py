@@ -20,7 +20,7 @@ def create_jwt(user, raw_password):
 
         payload = {"sub": user.id,
                    "name": f"{user.first_name} {user.last_name}",
-                   "email": user.email, "admin": False,
+                   "email": user.email, "admin": True,
                    "exp": datetime.utcnow() + timedelta(hours=1)}
 
     else:

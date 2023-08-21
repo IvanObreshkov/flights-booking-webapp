@@ -14,17 +14,17 @@ def add_flight_service(request):
         json_data = request.json
         if check_flight_existence(json_data):
             return {"Message": "Cannot add the certain flight! "
-                               "A flight with the same data already exist in the database!"}
+                               "A flight with the same data already exist in the database!"}, 409
         new_flight = create_flight(json_data)
         add_flight_to_db(new_flight)
-        return {"Message": "New flight added to DB!"}
+        return {"Message": "New flight added to DB!"}, 200
     except IntegrityError as e:
-        db.session.rollback()
+        db_rollback()
         handle_integrity_error(e)
     except Exception as e:
-        return {"Message": f"Couldn't create a new flight. Please try again later!, Error: {str(e)}"}, 500
+        return {"Message": f"Couldn't create a new flight. Please try again later!", "Error": str(e)}, 500
     finally:
-        db.session.close()
+        close_db_session()
 
 
 def create_flight(json_data):
@@ -46,13 +46,13 @@ def get_flights_service():
     try:
         all_flights = query_all_flights()
         flights_list = [flight.to_json() for flight in all_flights]
-        if flights_list:
+        if all_flights:
             return {"Flights": flights_list}, 200
         return {"Message": "The flights table is empty"}, 404
     except Exception as e:
         return {"Message": "Couldn't retrieve flights from DB!", "Error": str(e)}, 500
     finally:
-        db.session.close()
+        close_db_session()
 
 
 def get_flight_service(flight_number):
@@ -70,7 +70,7 @@ def get_flight_service(flight_number):
         return {"Message": f"Couldn't retrieve flight with number {flight_number} from DB!", "Error": str(e)}, 500
 
     finally:
-        db.session.close()
+        close_db_session()
 
 
 def get_flight_passengers_service(flight_number):
@@ -90,9 +90,9 @@ def get_flight_passengers_service(flight_number):
 
         return {"Message": f"Flight with number {flight_number} doesn't exist in the DB!"}, 404
     except Exception as e:
-        return {"Message": f"Couldn't passengers for flight {flight_number} from DB!", "Error": str(e)}, 500
+        return {"Message": f"Couldn't retrieve passengers for flight {flight_number} from DB!", "Error": str(e)}, 500
     finally:
-        db.session.close()
+        close_db_session()
 
 
 def delete_flight_service(flight_number):
@@ -108,11 +108,11 @@ def delete_flight_service(flight_number):
         return {"Message": f"Flight with number: {flight_number} doesn't exist in the DB!"}, 404
 
     except Exception as e:
-        db.session.rollback()
+        db_rollback()
         return {"Message": f"Couldn't delete flight with number: {flight_number} from DB!", "Error": str(e)}, 500
 
     finally:
-        db.session.close()
+        close_db_session()
 
 
 def update_flight_service(flight_number, request):
@@ -130,8 +130,8 @@ def update_flight_service(flight_number, request):
         return {"Message": f"Flight with number: {flight_number} doesn't exist in the DB!"}, 404
 
     except Exception as e:
-        db.session.rollback()
+        db_rollback()
         return {"Message": f"Couldn't update flight with number: {flight_number}", "Error": str(e)}, 500
 
     finally:
-        db.session.close()
+        close_db_session()

@@ -38,6 +38,14 @@ def query_passengers_on_flight(flight_number):
     return all_passengers
 
 
+def db_rollback():
+    db.session.rollback()
+
+
+def close_db_session():
+    db.session.close()
+
+
 def add_flight_to_db(flight):
     """Adds the new flight to the DB"""
 
