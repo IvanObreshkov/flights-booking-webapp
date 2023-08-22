@@ -39,4 +39,5 @@ jobs:
                 cd ./src/api/ && pip install -r requirements.txt
             - name: Test with pytest
               run: |
+                sudo service mysql start
                 pytest
