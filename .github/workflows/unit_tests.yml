@@ -21,6 +21,8 @@ jobs:
     run_tests:
         needs: run_mysql
         runs-on: ubuntu-latest
+        env: 
+            MYSQL_TEST_DATABASE_URI: "mysql+pymysql://root:root@127.0.0.1/test_db"
         strategy:
             matrix:
                 python-version: ["3.10"]
