@@ -55,6 +55,7 @@ flask run
 
 ```bash
 flask run --debug
+test
 ```
 # Common problems
 
