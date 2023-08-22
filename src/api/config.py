@@ -11,4 +11,4 @@ class DevConfig:
 
 class TestConfig:
     SECRET_KEY = os.getenv("TEST_SECRET_KEY")
-    SQLALCHEMY_DATABASE_URI = os.getenv("MYSQL_DATABASE_URI")
+    SQLALCHEMY_DATABASE_URI = os.getenv("MYSQL_TEST_DATABASE_URI")
