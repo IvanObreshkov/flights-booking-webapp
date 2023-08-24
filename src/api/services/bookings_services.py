@@ -19,12 +19,12 @@ def add_booking_service(request):
         return validate_and_add_booking(user, flight, json_data)
 
     except IntegrityError as e:
-        db.session.rollback()
+        db_rollback()
         return handle_integrity_error(e)
     except Exception as e:
         return {"Message": f"Couldn't create a new booking. Please try again later!", "Error": str(e)}, 500
     finally:
-        db.session.close()
+        close_db_session()
 
 
 def create_booking(json_data):
@@ -78,7 +78,7 @@ def get_bookings_service():
     except Exception as e:
         return {"Message": "Couldn't retrieve bookings from DB!", "Error": str(e)}, 500
     finally:
-        db.session.close()
+        close_db_session()
 
 
 def get_booking_service(booking_id):
@@ -94,7 +94,7 @@ def get_booking_service(booking_id):
     except Exception as e:
         return {"Message": f"Couldn't retrieve Booking with uuid {booking_id} from DB!", "Error": str(e)}, 500
     finally:
-        db.session.close()
+        close_db_session()
 
 
 def get_user_bookings_service(user_id):
@@ -116,7 +116,7 @@ def get_user_bookings_service(user_id):
     except Exception as e:
         return {"Message": "Couldn't retrieve user's bookings from DB!", "Error": str(e)}, 500
     finally:
-        db.session.close()
+        close_db_session()
 
 
 def delete_booking_service(booking_id):
@@ -132,10 +132,10 @@ def delete_booking_service(booking_id):
         return {"Message": f"Booking with uuid {booking_id} doesn't exist in the DB!"}, 404
 
     except Exception as e:
-        db.session.rollback()
+        db_rollback()
         return {"Message": f"Couldn't delete booking with uuid {booking_id} from DB!", "Error": str(e)}, 500
     finally:
-        db.session.close()
+        close_db_session()
 
 # We don't have an update_service as in the other files,
 # because we decided that the booking would be immutable,
