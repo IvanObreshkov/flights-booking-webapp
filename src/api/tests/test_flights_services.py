@@ -47,13 +47,6 @@ def empty_flights_table():
     return []
 
 
-@pytest.fixture
-def app():
-    app = create_app(TestConfig)
-    with app.app_context():
-        yield app
-
-
 @patch('api.services.flights_services.check_flight_existence')
 @patch('api.services.flights_services.add_flight_to_db')
 @patch('api.services.flights_services.create_flight')
