@@ -3,12 +3,9 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from api.app import create_app
-from api.config import TestConfig
 from api.db.models.user_bookings_model import UserBookings
 from api.services.bookings_services import validate_and_add_booking, add_booking_service, get_bookings_service, \
     get_booking_service, get_user_bookings_service, delete_booking_service
-from api.db.repositories.user_bookings_repository import delete_booking_from_db
 
 
 @pytest.fixture
@@ -16,17 +13,11 @@ def sample_booking():
     return UserBookings(booking_id='booking_1', user_id="user_1", flight_number="F123")
 
 
-@pytest.fixture
-def app():
-    app = create_app(TestConfig)
-    with app.app_context():
-        yield app
-
-
 @patch("api.services.bookings_services.create_booking")
 @patch("api.services.bookings_services.add_booking_to_db")
 @patch("api.services.bookings_services.check_booking_existence")
-def test_validate_and_add_booking(mock_check_booking_existence, mock_add_booking_to_db, mock_create_booking, app):
+def test_validate_and_add_booking(mock_check_booking_existence, mock_add_booking_to_db,
+                                  mock_create_booking):
     mock_user = MagicMock()
     mock_flight = MagicMock()
     mock_json_data = {
@@ -43,7 +34,7 @@ def test_validate_and_add_booking(mock_check_booking_existence, mock_add_booking
 
 
 @patch("api.services.bookings_services.add_booking_to_db")
-def test_validate_and_add_booking_user_does_not_exist(mock_add_booking_to_db, app):
+def test_validate_and_add_booking_user_does_not_exist(mock_add_booking_to_db):
     mock_user = None
     mock_flight = MagicMock()
     mock_json_data = {
@@ -58,7 +49,7 @@ def test_validate_and_add_booking_user_does_not_exist(mock_add_booking_to_db, ap
 
 
 @patch("api.services.bookings_services.add_booking_to_db")
-def test_validate_and_add_booking_flight_does_not_exist(mock_add_booking_to_db, app):
+def test_validate_and_add_booking_flight_does_not_exist(mock_add_booking_to_db):
     mock_user = MagicMock()
     mock_flight = None
     mock_json_data = {
@@ -75,8 +66,10 @@ def test_validate_and_add_booking_flight_does_not_exist(mock_add_booking_to_db, 
 @patch("api.services.bookings_services.validate_and_add_booking")
 @patch("api.services.bookings_services.query_flight_by_flight_number")
 @patch("api.services.bookings_services.get_user_by_uuid_service")
-def test_add_booking_service_exception(mock_get_user_by_uuid_service, mock_query_flight_by_flight_number,
-                                       mock_validate_and_add_booking, app):
+@patch("api.services.bookings_services.close_db_session")
+def test_add_booking_service_exception(mock_close_db_session, mock_get_user_by_uuid_service,
+                                       mock_query_flight_by_flight_number,
+                                       mock_validate_and_add_booking):
     mock_request = MagicMock()
 
     mock_request.json = {
@@ -91,10 +84,12 @@ def test_add_booking_service_exception(mock_get_user_by_uuid_service, mock_query
                         "Error": "Test exception"}
     assert status_code == 500
     mock_validate_and_add_booking.assert_not_called()
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.bookings_services.query_all_bookings')
-def test_get_bookings_service_not_empty(mock_query_all_bookings, app):
+@patch("api.services.bookings_services.close_db_session")
+def test_get_bookings_service_not_empty(mock_close_db_session, mock_query_all_bookings):
     BookingsRow = namedtuple('BookingsRow',
                              ['booking_id', 'flight_number', 'price', 'email', 'first_name', 'last_name'])
 
@@ -108,18 +103,22 @@ def test_get_bookings_service_not_empty(mock_query_all_bookings, app):
     response, status_code = get_bookings_service()
     assert status_code == 200
     assert "All bookings" in response
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.bookings_services.query_all_bookings')
-def test_get_bookings_service_empty(mock_query_all_bookings, app):
+@patch("api.services.bookings_services.close_db_session")
+def test_get_bookings_service_empty(mock_close_db_session, mock_query_all_bookings):
     mock_query_all_bookings.return_value = []
     response, status_code = get_bookings_service()
     assert status_code == 404
     assert response == {"Message": "The bookings table is empty"}
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.bookings_services.query_all_bookings')
-def test_get_bookings_service_exception(mock_query_all_bookings, app):
+@patch("api.services.bookings_services.close_db_session")
+def test_get_bookings_service_exception(mock_close_db_session, mock_query_all_bookings):
     mock_query_all_bookings.side_effect = Exception("Test exception")
     response, status_code = get_bookings_service()
     assert status_code == 500
@@ -127,28 +126,34 @@ def test_get_bookings_service_exception(mock_query_all_bookings, app):
         "Message": "Couldn't retrieve bookings from DB!",
         "Error": "Test exception",
     }
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.bookings_services.query_booking_by_id')
-def test_get_booking_service_existing(mock_query_booking, sample_booking, app):
+@patch("api.services.bookings_services.close_db_session")
+def test_get_booking_service_existing(mock_close_db_session, mock_query_booking, sample_booking):
     booking_id = 'booking_1'
     mock_query_booking.return_value = sample_booking
     response, status_code = get_booking_service(booking_id)
     assert status_code == 200
     assert "Booking" in response
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.bookings_services.query_booking_by_id')
-def test_get_booking_service_non_existing(mock_query_booking, app):
+@patch("api.services.bookings_services.close_db_session")
+def test_get_booking_service_non_existing(mock_close_db_session, mock_query_booking):
     booking_id = 'Wrong booking'
     mock_query_booking.return_value = None
     response, status_code = get_booking_service("Wrong booking")
     assert status_code == 404
     assert response == {"Message": f"Booking with uuid {booking_id} doesn't exist in the DB!"}
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.bookings_services.query_booking_by_id')
-def test_get_booking_service_exception(mock_query_booking, app):
+@patch("api.services.bookings_services.close_db_session")
+def test_get_booking_service_exception(mock_close_db_session, mock_query_booking):
     booking_id = 'booking_1'
     mock_query_booking.side_effect = Exception("Test exception")
     response, status_code = get_booking_service(booking_id)
@@ -157,11 +162,14 @@ def test_get_booking_service_exception(mock_query_booking, app):
         "Message": f"Couldn't retrieve Booking with uuid {booking_id} from DB!",
         "Error": "Test exception",
     }
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.bookings_services.get_user_by_uuid_service')
 @patch('api.services.bookings_services.query_bookings_by_user_id')
-def test_get_user_bookings_service_existing_user(mock_query_bookings_by_user_id, mock_get_user_by_uuid_service, app):
+@patch("api.services.bookings_services.close_db_session")
+def test_get_user_bookings_service_existing_user(mock_close_db_session, mock_query_bookings_by_user_id,
+                                                 mock_get_user_by_uuid_service):
     user_id = "user_1"
     UsersBookingsRow = namedtuple('BookingsRow',
                                   ['booking_id', 'flight_number', 'start_destination', 'end_destination',
@@ -182,12 +190,14 @@ def test_get_user_bookings_service_existing_user(mock_query_bookings_by_user_id,
     response, status_code = get_user_bookings_service(user_id)
     assert status_code == 200
     assert "User's Bookings" in response
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.bookings_services.get_user_by_uuid_service')
 @patch('api.services.bookings_services.query_bookings_by_user_id')
-def test_get_user_bookings_service_not_existing_bookings(mock_query_bookings_by_user_id, mock_get_user_by_uuid_service,
-                                                         app):
+@patch("api.services.bookings_services.close_db_session")
+def test_get_user_bookings_service_not_existing_bookings(mock_close_db_session, mock_query_bookings_by_user_id,
+                                                         mock_get_user_by_uuid_service):
     user_id = "user_1"
 
     mock_get_user_by_uuid_service.return_value = MagicMock()
@@ -195,21 +205,26 @@ def test_get_user_bookings_service_not_existing_bookings(mock_query_bookings_by_
     response, status_code = get_user_bookings_service(user_id)
     assert status_code == 404
     assert response == {"Message": f"User with uuid {user_id} has not booked any flights!"}
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.bookings_services.get_user_by_uuid_service')
-def test_get_user_bookings_service_non_existing_user(mock_get_user_by_uuid_service, app):
+@patch("api.services.bookings_services.close_db_session")
+def test_get_user_bookings_service_non_existing_user(mock_close_db_session, mock_get_user_by_uuid_service):
     user_id = "Wrong user"
 
     mock_get_user_by_uuid_service.return_value = None
     response, status_code = get_user_bookings_service(user_id)
     assert status_code == 404
     assert response == {"Message": f"User with uuid {user_id} doesn't exist in the DB!"}
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.bookings_services.get_user_by_uuid_service')
 @patch('api.services.bookings_services.query_bookings_by_user_id')
-def test_get_user_bookings_service_exception(mock_query_bookings_by_user_id, mock_get_user_by_uuid_service, app):
+@patch("api.services.bookings_services.close_db_session")
+def test_get_user_bookings_service_exception(mock_close_db_session, mock_query_bookings_by_user_id,
+                                             mock_get_user_by_uuid_service):
     user_id = "user_1"
 
     mock_get_user_by_uuid_service.side_effect = Exception("Test exception")
@@ -218,33 +233,42 @@ def test_get_user_bookings_service_exception(mock_query_bookings_by_user_id, moc
     assert status_code == 500
     assert response == {"Message": "Couldn't retrieve user's bookings from DB!",
                         "Error": "Test exception"}
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.bookings_services.query_booking_by_id')
 @patch('api.services.bookings_services.delete_booking_from_db')
-def test_delete_booking_service_existing_booking(mock_remove_booking, mock_query_booking_by_id, app):
+@patch("api.services.bookings_services.close_db_session")
+def test_delete_booking_service_existing_booking(mock_close_db_session, mock_remove_booking, mock_query_booking_by_id):
     booking_id = 'booking_1'
     mock_query_booking_by_id.return_value = sample_booking
     response, status_code = delete_booking_service(booking_id)
     assert status_code == 200
     assert response == {"Message": f"User with uuid {booking_id} was removed successfully from the DB"}
     mock_remove_booking.assert_called_once_with(sample_booking)
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.bookings_services.query_booking_by_id')
 @patch('api.services.bookings_services.delete_booking_from_db')
-def test_delete_booking_service_non_existing_booking(mock_remove_booking, mock_query_booking_by_id, app):
+@patch("api.services.bookings_services.close_db_session")
+def test_delete_booking_service_non_existing_booking(mock_close_db_session, mock_remove_booking,
+                                                     mock_query_booking_by_id):
     booking_id = 'Wrong booking'
     mock_query_booking_by_id.return_value = None
     response, status_code = delete_booking_service(booking_id)
     assert status_code == 404
     assert response == {"Message": f"Booking with uuid {booking_id} doesn't exist in the DB!"}
     mock_remove_booking.assert_not_called()
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.bookings_services.query_booking_by_id')
 @patch('api.services.bookings_services.delete_booking_from_db')
-def test_delete_booking_service_non_existing_booking(mock_remove_booking, mock_query_booking_by_id, app):
+@patch("api.services.bookings_services.close_db_session")
+@patch("api.services.bookings_services.db_rollback")
+def test_delete_booking_service_non_existing_booking(mock_db_rollback, mock_close_db_session, mock_remove_booking,
+                                                     mock_query_booking_by_id):
     booking_id = 'booking_1'
     mock_query_booking_by_id.side_effect = Exception("Test exception")
     mock_remove_booking.side_effect = Exception("Test exception")
@@ -253,3 +277,5 @@ def test_delete_booking_service_non_existing_booking(mock_remove_booking, mock_q
     assert response == {"Message": f"Couldn't delete booking with uuid {booking_id} from DB!",
                         "Error": "Test exception"}
     mock_remove_booking.assert_not_called()
+    mock_close_db_session.assert_called_once()
+    mock_db_rollback.assert_called_once()
