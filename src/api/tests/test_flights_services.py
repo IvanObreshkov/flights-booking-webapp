@@ -3,8 +3,6 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from api.app import create_app
-from api.config import TestConfig
 from api.services.flights_services import *
 
 
