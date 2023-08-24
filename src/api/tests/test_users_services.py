@@ -2,8 +2,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from api.app import create_app
-from api.config import TestConfig
 from api.db.models.users_model import Users
 from api.services.users_services import validate_data, get_users_service, get_user_by_uuid_service, delete_user_service, \
     update_user_service
@@ -45,13 +43,6 @@ def empty_users_table():
     return []
 
 
-@pytest.fixture
-def app():
-    app = create_app(TestConfig)
-    with app.app_context():
-        yield app
-
-
 def test_validate_data_valid():
     data = {
         "first_name": "John",
@@ -85,23 +76,28 @@ def test_validate_data_invalid_email():
 
 
 @patch('api.services.users_services.query_all_users')
-def test_get_users_service_not_empty(mock_query_all_users, sample_users_list, app):
+@patch('api.services.users_services.close_db_session')
+def test_get_users_service_not_empty(mock_close_db_session, mock_query_all_users, sample_users_list):
     mock_query_all_users.return_value = sample_users_list
     response, status_code = get_users_service()
     assert status_code == 200
     assert "Users" in response
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.users_services.query_all_users')
-def test_get_users_service_empty(mock_query_all_users, app):
+@patch('api.services.users_services.close_db_session')
+def test_get_users_service_empty(mock_close_db_session, mock_query_all_users):
     mock_query_all_users.return_value = []
     response, status_code = get_users_service()
     assert status_code == 404
     assert response == {"Message": "The users table is empty"}
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.users_services.query_all_users')
-def test_get_users_service_exception(mock_query_all_users, app):
+@patch('api.services.users_services.close_db_session')
+def test_get_users_service_exception(mock_close_db_session, mock_query_all_users):
     mock_query_all_users.side_effect = Exception("Test exception")
     response, status_code = get_users_service()
     assert status_code == 500
@@ -109,27 +105,33 @@ def test_get_users_service_exception(mock_query_all_users, app):
         "Message": "Couldn't retrieve users from DB!",
         "Error": "Test exception",
     }
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.users_services.query_user_by_uuid')
-def test_get_user_by_uuid_service_existing(mock_query_user, sample_user, app):
+@patch('api.services.users_services.close_db_session')
+def test_get_user_by_uuid_service_existing(mock_close_db_session, mock_query_user, sample_user):
     mock_query_user.return_value = sample_user
     response, status_code = get_user_by_uuid_service("user1")
     assert status_code == 200
     assert "User" in response
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.users_services.query_user_by_uuid')
-def test_get_user_by_uuid_service_non_existing(mock_query_user, app):
+@patch('api.services.users_services.close_db_session')
+def test_get_user_by_uuid_service_non_existing(mock_close_db_session, mock_query_user):
     mock_query_user.return_value = None
     user_uuid = "Wrong user"
     response, status_code = get_user_by_uuid_service(user_uuid)
     assert status_code == 404
     assert response == {"Message": f"User with uuid {user_uuid} doesn't exist in the DB!"}
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.users_services.query_user_by_uuid')
-def test_get_user_by_uuid_service_exception(mock_query_user, app):
+@patch('api.services.users_services.close_db_session')
+def test_get_user_by_uuid_service_exception(mock_close_db_session, mock_query_user):
     user_uuid = "Wrong user"
     mock_query_user.side_effect = Exception("Test exception")
     response, status_code = get_user_by_uuid_service(user_uuid)
@@ -138,11 +140,13 @@ def test_get_user_by_uuid_service_exception(mock_query_user, app):
         "Message": f"Couldn't retrieve user with uuid {user_uuid} from DB!",
         "Error": "Test exception",
     }
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.users_services.query_user_by_uuid')
 @patch('api.services.users_services.delete_user_from_db')
-def test_delete_user_service_existing_user(mock_delete_user, mock_query_user, app):
+@patch('api.services.users_services.close_db_session')
+def test_delete_user_service_existing_user(mock_close_db_session, mock_delete_user, mock_query_user):
     user_uuid = "user1"
     mock_query_user.return_value = sample_user
 
@@ -150,11 +154,13 @@ def test_delete_user_service_existing_user(mock_delete_user, mock_query_user, ap
     assert status_code == 200
     assert response == {"Message": f"User with uuid {user_uuid} was removed successfully from the DB"}
     mock_delete_user.assert_called_once()
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.users_services.query_user_by_uuid')
 @patch('api.services.users_services.delete_user_from_db')
-def test_delete_user_service_wrong_user_uuid(mock_delete_user, mock_query_user, app):
+@patch('api.services.users_services.close_db_session')
+def test_delete_user_service_wrong_user_uuid(mock_close_db_session, mock_delete_user, mock_query_user):
     user_uuid = "Wrong user"
     mock_query_user.return_value = None
 
@@ -162,11 +168,14 @@ def test_delete_user_service_wrong_user_uuid(mock_delete_user, mock_query_user, 
     assert status_code == 404
     assert response == {"Message": f"User with uuid {user_uuid} doesn't exist in the DB!"}
     mock_delete_user.assert_not_called()
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.users_services.query_user_by_uuid')
 @patch('api.services.users_services.delete_user_from_db')
-def test_delete_user_service_exception(mock_delete_user, mock_query_user, app):
+@patch('api.services.users_services.close_db_session')
+@patch("api.services.users_services.db_rollback")
+def test_delete_user_service_exception(mock_db_rollback, mock_close_db_session, mock_delete_user, mock_query_user):
     user_uuid = "user1"
     mock_delete_user.side_effect = Exception("Test exception")
     mock_query_user.side_effect = Exception("Test exception")
@@ -176,11 +185,14 @@ def test_delete_user_service_exception(mock_delete_user, mock_query_user, app):
     assert response == {"Message": f"Couldn't delete user with uuid {user_uuid} from DB!",
                         "Error": "Test exception"}
     mock_delete_user.assert_not_called()
+    mock_close_db_session.assert_called_once()
+    mock_db_rollback.assert_called_once()
 
 
 @patch('api.services.users_services.query_user_by_uuid')
 @patch('api.services.users_services.edit_user_data')
-def test_update_user_service_existing_user(mock_edit_user_data, mock_query_user, app):
+@patch('api.services.users_services.close_db_session')
+def test_update_user_service_existing_user(mock_close_db_session, mock_edit_user_data, mock_query_user):
     user_uuid = "user1"
     mock_query_user.return_value = sample_user
     request = MagicMock()
@@ -189,11 +201,13 @@ def test_update_user_service_existing_user(mock_edit_user_data, mock_query_user,
     assert status_code == 200
     assert response == {"Message": f"User with uuid {user_uuid} was updated successfully."}
     mock_edit_user_data.assert_called_once_with(sample_user, request.json)
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.users_services.query_user_by_uuid')
 @patch('api.services.users_services.edit_user_data')
-def test_update_user_service_wrong_user_number(mock_edit_user_data, mock_query_user, app):
+@patch('api.services.users_services.close_db_session')
+def test_update_user_service_wrong_user_number(mock_close_db_session, mock_edit_user_data, mock_query_user):
     user_uuid = "Wrong user"
     mock_query_user.return_value = None
     request = MagicMock()
@@ -202,11 +216,14 @@ def test_update_user_service_wrong_user_number(mock_edit_user_data, mock_query_u
     assert status_code == 404
     assert response == {"Message": f"User with uuid {user_uuid} doesn't exist in the DB!"}
     mock_edit_user_data.assert_not_called()
+    mock_close_db_session.assert_called_once()
 
 
 @patch('api.services.users_services.query_user_by_uuid')
 @patch('api.services.users_services.edit_user_data')
-def test_update_user_service_exception(mock_edit_user_data, mock_query_user, app):
+@patch('api.services.users_services.close_db_session')
+@patch("api.services.users_services.db_rollback")
+def test_update_user_service_exception(mock_db_rollback, mock_close_db_session, mock_edit_user_data, mock_query_user):
     user_uuid = "user1"
     mock_query_user.side_effect = Exception("Test exception")
     mock_edit_user_data.side_effect = Exception("Test exception")
@@ -217,3 +234,5 @@ def test_update_user_service_exception(mock_edit_user_data, mock_query_user, app
     assert response == {"Message": f"Couldn't update user with uuid {user_uuid}",
                         "Error": "Test exception"}
     mock_edit_user_data.assert_not_called()
+    mock_close_db_session.assert_called_once()
+    mock_db_rollback.assert_called_once()

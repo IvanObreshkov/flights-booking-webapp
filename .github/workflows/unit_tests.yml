@@ -6,20 +6,7 @@ on:
         paths: ['src/api/**']
 
 jobs:
-    run_mysql:
-        runs-on: ubuntu-latest
-        env:
-            DB_DATABASE: test_db
-            DB_USER: root
-            DB_PASSWORD: root
-        steps:
-            - name: Set up MySQL
-              run: |
-                sudo systemctl start mysql.service
-                mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
-
-    run_tests:
-        needs: run_mysql
+    run_unit_tests:
         runs-on: ubuntu-latest
         strategy:
             matrix:
@@ -37,4 +24,4 @@ jobs:
                 cd ./src/api/ && pip install -r requirements.txt
             - name: Test with pytest
               run: |
-                pytest
+               cd ./src/api/ && pytest

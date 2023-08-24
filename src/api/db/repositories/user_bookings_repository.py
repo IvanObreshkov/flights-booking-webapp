@@ -80,3 +80,11 @@ def add_booking_to_db(new_booking):
 
     db.session.add(new_booking)
     db.session.commit()
+
+
+def close_db_session():
+    db.session.close()
+
+
+def db_rollback():
+    db.session.rollback()
