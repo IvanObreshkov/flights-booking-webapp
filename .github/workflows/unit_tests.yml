@@ -6,23 +6,8 @@ on:
         paths: ['src/api/**']
 
 jobs:
-    run_mysql:
-        runs-on: ubuntu-latest
-        env:
-            DB_DATABASE: test_db
-            DB_USER: root
-            DB_PASSWORD: root
-        steps:
-            - name: Set up MySQL
-              run: |
-                sudo service mysql start
-                mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
-
     run_tests:
-        needs: run_mysql
         runs-on: ubuntu-latest
-        env: 
-            MYSQL_TEST_DATABASE_URI: "mysql+pymysql://root:root@127.0.0.1/test_db"
         strategy:
             matrix:
                 python-version: ["3.10"]
