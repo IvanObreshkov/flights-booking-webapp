@@ -88,7 +88,7 @@ def get_users_service():
     except Exception as e:
         return {"Message": "Couldn't retrieve users from DB!", "Error": str(e)}, 500
     finally:
-        db.session.close()
+        close_db_session()
 
 
 def get_user_by_uuid_service(user_uuid):
@@ -104,7 +104,7 @@ def get_user_by_uuid_service(user_uuid):
     except Exception as e:
         return {"Message": f"Couldn't retrieve user with uuid {user_uuid} from DB!", "Error": str(e)}, 500
     finally:
-        db.session.close()
+        close_db_session()
 
 
 def delete_user_service(user_uuid):
@@ -119,10 +119,10 @@ def delete_user_service(user_uuid):
 
         return {"Message": f"User with uuid {user_uuid} doesn't exist in the DB!"}, 404
     except Exception as e:
-        db.session.rollback()
+        db_rollback()
         return {"Message": f"Couldn't delete user with uuid {user_uuid} from DB!", "Error": str(e)}, 500
     finally:
-        db.session.close()
+        close_db_session()
 
 
 def update_user_service(user_uuid, request):
@@ -139,7 +139,7 @@ def update_user_service(user_uuid, request):
 
         return {"Message": f"User with uuid {user_uuid} doesn't exist in the DB!"}, 404
     except Exception as e:
-        db.session.rollback()
+        db_rollback()
         return {"Message": f"Couldn't update user with uuid {user_uuid}", "Error": str(e)}, 500
     finally:
-        db.session.close()
+        close_db_session()

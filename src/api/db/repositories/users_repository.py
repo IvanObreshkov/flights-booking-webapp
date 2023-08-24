@@ -61,3 +61,11 @@ def edit_user_data(user, json_data):
     user.email = json_data.get('email', user.email)
     user.password = json_data.get('password', user.password)
     db.session.commit()
+
+
+def close_db_session():
+    db.session.close()
+
+
+def db_rollback():
+    db.session.rollback()
