@@ -3,7 +3,7 @@ import uuid
 from sqlalchemy.exc import IntegrityError
 
 from api.db.repositories.flights_repository import *
-from utilities.utils import handle_integrity_error
+from api.utilities.utils import handle_integrity_error
 
 
 def add_flight_service(request):

@@ -4,7 +4,7 @@ from flask import Blueprint, request, render_template, make_response
 from werkzeug.exceptions import InternalServerError
 
 from api.services.users_services import validate_data
-from utilities.jwt_creation import create_auth_jwt
+from api.utilities.jwt_creation import create_auth_jwt
 from api.db.repositories.users_repository import query_user_by_email
 
 login_bp = Blueprint("login", __name__)

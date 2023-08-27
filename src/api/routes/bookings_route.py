@@ -1,9 +1,9 @@
 from flask import Blueprint
 from flask_expects_json import expects_json
 
-from utilities.json_schemas import bookings_schema
+from api.utilities.json_schemas import bookings_schema
 from api.services.bookings_services import *
-from utilities.jwt_required_decorators import *
+from api.utilities.jwt_required_decorators import *
 
 crud_bookings_bp = Blueprint("bookings", __name__)
 

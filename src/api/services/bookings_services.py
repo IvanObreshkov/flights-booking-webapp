@@ -2,7 +2,7 @@ from sqlalchemy.exc import IntegrityError
 
 from api.services.flights_services import query_flight_by_flight_number
 from api.services.users_services import get_user_by_uuid_service
-from utilities.utils import handle_integrity_error
+from api.utilities.utils import handle_integrity_error
 from api.db.repositories.user_bookings_repository import *
 
 

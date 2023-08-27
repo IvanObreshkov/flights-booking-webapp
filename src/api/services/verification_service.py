@@ -3,7 +3,7 @@ from typing import Dict, Tuple
 
 import jwt
 
-from db.repositories.users_repository import change_verified_status, query_user_by_uuid
+from api.db.repositories.users_repository import change_verified_status, query_user_by_uuid
 
 
 class Verification:

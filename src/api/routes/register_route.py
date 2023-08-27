@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import InternalServerError
 
 from api.services.users_services import create_user_service, add_user_to_db
-from utilities.utils import handle_integrity_error
+from api.utilities.utils import handle_integrity_error
 from api.db.database import db
 
 register_bp = Blueprint("register", __name__)
@@ -20,7 +20,7 @@ def register_user():
         data = request.form
         new_user = create_user_service(data)
         add_user_to_db(new_user)
-
+        #send_verification_email(new_user.email)
         return render_template('register.html', msg="New user added to DB!"), 200
     except ValueError as e:
         # Handle validation errors.

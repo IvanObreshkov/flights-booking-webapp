@@ -3,7 +3,7 @@ import os
 
 import jwt
 
-from db.models.users_model import Users
+from api.db.models.users_model import Users
 
 
 def create_auth_jwt(user, raw_password):

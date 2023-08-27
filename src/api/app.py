@@ -3,7 +3,7 @@ from flask_migrate import Migrate
 
 from api.config import DevConfig
 from api.db.database import db
-from api.routes import Routes
+from api.routes.routes import Routes
 
 migrate = Migrate()
 
