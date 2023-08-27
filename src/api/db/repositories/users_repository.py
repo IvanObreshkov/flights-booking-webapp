@@ -63,6 +63,11 @@ def edit_user_data(user, json_data):
     db.session.commit()
 
 
+def change_verified_status(user: Users) -> None:
+    user.verified = True
+    db.session.commit()
+
+
 def close_db_session():
     db.session.close()
 
