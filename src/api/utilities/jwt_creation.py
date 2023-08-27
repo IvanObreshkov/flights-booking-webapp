@@ -37,7 +37,7 @@ def create_auth_jwt(user, raw_password):
 
 
 def create_verification_jwt(user: Users) -> str:
-    payload = {"sub": user.id,
-               "exp": datetime.utcnow() + timedelta(hours=1)}
+    payload = {"sub": "test",
+               "exp": datetime.utcnow() + timedelta(hours=48)}
     token = jwt.encode(payload, os.getenv("SECRET_KEY"), algorithm="HS256")
     return token

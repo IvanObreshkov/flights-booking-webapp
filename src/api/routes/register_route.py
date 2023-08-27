@@ -10,6 +10,7 @@ from werkzeug.exceptions import InternalServerError
 from api.services.users_services import create_user_service, add_user_to_db
 from api.utilities.utils import handle_integrity_error
 from api.db.database import db
+from api.services.mailer_service import MailerService
 
 register_bp = Blueprint("register", __name__)
 
@@ -20,14 +21,14 @@ def register_user():
         data = request.form
         new_user = create_user_service(data)
         add_user_to_db(new_user)
-        #send_verification_email(new_user.email)
+        MailerService.send_verification_email(new_user)
         return render_template('register.html', msg="New user added to DB!"), 200
     except ValueError as e:
         # Handle validation errors.
         return render_template('register.html', msg=str(e)), 400
     except IntegrityError as e:
         db.session.rollback()
-        handle_integrity_error(e)
+        return handle_integrity_error(e)
     except Exception as e:
         # Handle any other exceptions and errors
         raise InternalServerError(f'Registration failed! Please try again later!, Error: {str(e)}')
