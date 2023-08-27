@@ -3,8 +3,10 @@ import os
 
 import jwt
 
+from db.models.users_model import Users
 
-def create_jwt(user, raw_password):
+
+def create_auth_jwt(user, raw_password):
     """Create JWT tokens for admin and users
 
     Parameters:
@@ -31,4 +33,11 @@ def create_jwt(user, raw_password):
 
     token = jwt.encode(payload, os.getenv("SECRET_KEY"), algorithm="HS256")
 
+    return token
+
+
+def create_verification_jwt(user: Users) -> str:
+    payload = {"sub": user.id,
+               "exp": datetime.utcnow() + timedelta(hours=1)}
+    token = jwt.encode(payload, os.getenv("SECRET_KEY"), algorithm="HS256")
     return token
