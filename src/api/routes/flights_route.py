@@ -1,8 +1,8 @@
 from flask import Blueprint, request
 from flask_expects_json import expects_json
 from api.services.flights_services import *
-from api.services.jwt_required_decorators import admin_required
-from api.json_schemas import flights_schema, update_flight_schema
+from api.utilities.jwt_required_decorators import admin_required
+from api.utilities.json_schemas import flights_schema, update_flight_schema
 
 crud_flights_bp = Blueprint("flights", __name__)
 

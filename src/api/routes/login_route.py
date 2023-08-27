@@ -1,11 +1,11 @@
-from flask_bcrypt import check_password_hash
 from dotenv import load_dotenv
 from flask import Blueprint, request, render_template, make_response
+from flask_bcrypt import check_password_hash
 from werkzeug.exceptions import InternalServerError
 
-from api.services.users_services import validate_data
-from api.services.jwt_creation import create_jwt
 from api.db.repositories.users_repository import query_user_by_email
+from api.services.users_services import validate_data
+from api.utilities.jwt_creation import create_auth_jwt
 
 login_bp = Blueprint("login", __name__)
 load_dotenv()
@@ -19,7 +19,6 @@ def login_users():
 
         email = data["email"]
         raw_password = data["password"]
-
         user = query_user_by_email(email)
         return validate_user(raw_password, user), 200
 
@@ -44,7 +43,7 @@ def validate_user(raw_password, user):
         hashed_user_password = user.password
 
         if check_password_hash(hashed_user_password, raw_password):
-            token = create_jwt(user, raw_password)
+            token = create_auth_jwt(user, raw_password)
             resp = make_response(render_template('login.html', msg=str(token)))
             resp.set_cookie("token", token, httponly=True, secure=True, samesite="Strict")
             return resp
